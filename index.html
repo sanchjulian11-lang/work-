@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Workflow Studio</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#182b38;background:#f3f6f7}*{box-sizing:border-box}body{margin:0}main{max-width:1000px;margin:auto;padding:40px 20px}h1{font-size:40px;margin:8px 0}h2{font-size:22px}.eyebrow{color:#087b70;font-weight:700}p{line-height:1.6;color:#48606e}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel,article{background:white;border:1px solid #dce5e8;border-radius:16px;padding:24px;margin-bottom:16px}label{display:block;font-weight:600;margin-top:16px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:10px;border:1px solid #b9cbd1;border-radius:8px;margin-top:6px}button{background:#087b70;color:white;border:0;border-radius:8px;padding:11px 16px;cursor:pointer;margin-top:16px}button.secondary{background:#e7eef0;color:#182b38}small{color:#48606e}.tag{display:inline-block;background:#e4f5ee;color:#08614e;border-radius:30px;padding:4px 10px;font-size:13px}.empty{padding:24px;border:2px dashed #c7d6dc;border-radius:16px}.actions{display:flex;gap:10px;flex-wrap:wrap}#status{min-height:24px}footer{margin-top:24px;font-size:14px}@media(max-width:720px){.grid{grid-template-columns:1fr}h1{font-size:32px}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">WORKFLOW STUDIO</div><h1>Make room for better work.</h1>
+<p>Capture what you repeat. Find where AI can help. Start with one small, measurable improvement.</p>
+<div class="grid"><section class="panel"><h2>Add a recurring task</h2>
+<form id="workflow-form">
+<label for="task">What do you do?</label><input id="task" maxlength="160" required placeholder="e.g. Turn meeting notes into follow-up emails">
+<label for="tools">Which tools do you use?</label><input id="tools" maxlength="200" placeholder="e.g. Gmail, spreadsheets, Slack">
+<label for="frequency">How often each week?</label><input id="frequency" type="number" min="1" max="100" value="5" required>
+<label for="minutes">Minutes each time</label><input id="minutes" type="number" min="1" max="1440" value="15" required>
+<label for="kind">What kind of work is it?</label><select id="kind"><option value="writing">Writing or communication</option><option value="research">Research or summarizing</option><option value="data">Moving or organizing information</option><option value="planning">Planning and prioritizing</option></select>
+<label for="notes">What makes it slow?</label><textarea id="notes" maxlength="2000" rows="3" placeholder="Describe the input, steps, and desired result."></textarea>
+<button type="submit">Find an opportunity</button></form>
+<p><small>Your entries stay in this browser. This starter does not send them to an AI service or connect to your accounts.</small></p>
+</section><section><h2>Your opportunities</h2><p id="summary"></p><div id="opportunities"></div><div class="actions"><button id="export" class="secondary">Export your workflows</button></div><p id="status" role="status"></p></section></div>
+<section class="panel"><h2>Your first experiment</h2><p>Choose one frequent task. Record how long it takes today, try the suggested approach on one example, and compare the time and quality. Review the result before using it in your work.</p><p>Next, describe a typical workday and the tools you use in this chat. We can turn the best opportunity into a concrete automation.</p></section>
+<footer>Local starter · No account required · Export regularly to keep a backup</footer>
+</main><script src="app.js"></script></body></html>
