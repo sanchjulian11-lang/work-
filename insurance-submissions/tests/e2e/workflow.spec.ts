@@ -138,3 +138,48 @@ test("complete broker review, approve, export, and revoke approval after a chang
     page.getByRole("button", { name: "Approve this revision" }),
   ).toBeDisabled();
 });
+
+test("save, verify, and validation errors stay at the same question", async ({
+  page,
+}) => {
+  await page.goto("/?tab=Questionnaire");
+  const question = page.locator("#question-payroll");
+  await question.locator("[name=value]").fill("275000");
+  await question.getByRole("button", { name: "Save answer" }).click();
+  await expect(page).toHaveURL(
+    /tab=Questionnaire.*question=payroll#question-payroll$/,
+  );
+  await expect(question.getByRole("status")).toHaveText("Saved");
+  await expect(question.getByRole("status")).toBeInViewport();
+  await expect(question.getByText("Unverified", { exact: true })).toBeVisible();
+  await question
+    .getByRole("button", { name: "Verify recorded statement" })
+    .click();
+  await expect(
+    question.getByText("Broker verified", { exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(
+    /tab=Questionnaire.*question=payroll#question-payroll$/,
+  );
+  // Force an invalid request past browser validation to exercise the server error redirect.
+  await question
+    .locator("form")
+    .first()
+    .evaluate((form: HTMLFormElement) => {
+      form.noValidate = true;
+    });
+  await question.locator("[name=value]").fill("-1");
+  await question.getByRole("button", { name: "Save answer" }).click();
+  await expect(question.getByRole("alert")).toContainText(
+    "Number is outside the permitted range",
+  );
+  await expect(question.getByRole("alert")).toBeInViewport();
+  await expect(page).toHaveURL(
+    /tab=Questionnaire.*question=payroll#question-payroll$/,
+  );
+  await page.reload();
+  await expect(question.locator("[name=value]")).toHaveValue("275000");
+  await expect(
+    question.getByText("Broker verified", { exact: true }),
+  ).toBeVisible();
+});

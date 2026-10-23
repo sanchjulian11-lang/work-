@@ -25,6 +25,7 @@ import {
   saveAnswer,
   verifyAnswer,
 } from "@/lib/domain";
+import { actionDestination } from "@/lib/navigation";
 import { RULE_VERSION } from "@/lib/rules";
 import { generatePlan } from "@/lib/ai";
 import { inspectUpload, MAX_UPLOAD_BYTES } from "@/lib/documents";
@@ -75,11 +76,12 @@ export async function demoRole(form: FormData) {
 export async function perform(form: FormData) {
   let target = field(form, "businessId");
   let message = "Saved";
+  const action = field(form, "action");
+  const questionId = field(form, "questionId");
   try {
     await sameOrigin();
     const actor = await currentActor();
     if (!actor) throw new Error("Sign in first");
-    const action = field(form, "action");
     if (action === "create") {
       requireBroker(actor);
       const profile = ProfileSchema.parse(
@@ -251,11 +253,7 @@ export async function perform(form: FormData) {
         : error instanceof Error
           ? error.message
           : "Operation failed";
-    redirect(
-      `/?business=${encodeURIComponent(target)}&error=${encodeURIComponent(text)}`,
-    );
+    redirect(actionDestination(action, target, "error", text, questionId));
   }
-  redirect(
-    `/?business=${encodeURIComponent(target)}&message=${encodeURIComponent(message)}`,
-  );
+  redirect(actionDestination(action, target, "message", message, questionId));
 }

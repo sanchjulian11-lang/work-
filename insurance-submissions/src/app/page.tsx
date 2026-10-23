@@ -192,6 +192,10 @@ export default async function Page({
   if (!broker && ["Broker review", "Audit trail"].includes(tab))
     tab = "Overview";
   const check = s ? completeness(s) : null;
+  const questionFeedback =
+    tab === "Questionnaire" &&
+    !!s &&
+    activeQuestions(s).some((q) => q.id === query.question);
   const link = (name: string) =>
     `/?business=${s?.id ?? ""}&tab=${encodeURIComponent(name)}`;
   return (
@@ -277,12 +281,12 @@ export default async function Page({
               ON <span>Contractors & trades</span>
             </span>
           </div>
-          {query.error && (
+          {query.error && !questionFeedback && (
             <div className="notice error" role="alert">
               {query.error}
             </div>
           )}
-          {query.message && (
+          {query.message && !questionFeedback && (
             <div className="notice success" role="status">
               {query.message}
             </div>
@@ -504,7 +508,25 @@ export default async function Page({
                         .map((q) => {
                           const a = s.answers[q.id];
                           return (
-                            <article className="question" key={q.id}>
+                            <article
+                              className="question"
+                              key={q.id}
+                              id={`question-${q.id}`}
+                            >
+                              {questionFeedback &&
+                                query.question === q.id &&
+                                query.error && (
+                                  <div className="notice error" role="alert">
+                                    {query.error}
+                                  </div>
+                                )}
+                              {questionFeedback &&
+                                query.question === q.id &&
+                                query.message && (
+                                  <div className="notice success" role="status">
+                                    {query.message}
+                                  </div>
+                                )}
                               <div className="section-heading">
                                 <label htmlFor={`answer-${q.id}`}>
                                   {q.label} <span className="required">*</span>

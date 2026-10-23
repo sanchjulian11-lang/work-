@@ -859,3 +859,7 @@ dd {
     flex-direction: column;
   }
 }
+
+.question {
+  scroll-margin-top: 24px;
+}
