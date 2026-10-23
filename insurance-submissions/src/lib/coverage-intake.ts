@@ -691,6 +691,7 @@ export function displayAnswer(
   id: string,
   value: string,
   documents: { id: string; name: string }[] = [],
+  locations: { id: string; label: string }[] = [],
 ): string {
   if (!SCHEDULES[id]) return value;
   try {
@@ -699,10 +700,15 @@ export function displayAnswer(
         (row, i) =>
           `Record ${i + 1}\n` +
           SCHEDULES[id]
-            .filter((f) => scheduleFieldActive(id, f, row) && row[f.id]?.trim())
+            .filter(
+              (f) =>
+                scheduleFieldActive(id, f, row) &&
+                row[f.id]?.trim() &&
+                !(id === "locations" && f.id === "reference"),
+            )
             .map(
               (f) =>
-                `${f.label}: ${f.type === "document" ? (documents.find((d) => d.id === row[f.id])?.name ?? row[f.id]) : row[f.id]}`,
+                `${id === "property_schedule" && f.id === "location" ? "Business location" : f.label}: ${id === "property_schedule" && f.id === "location" ? (locations.find((l) => l.id === row.location)?.label ?? "Linked location — see location records") : f.type === "document" ? (documents.find((d) => d.id === row[f.id])?.name ?? row[f.id]) : row[f.id]}`,
             )
             .join("\n"),
       )

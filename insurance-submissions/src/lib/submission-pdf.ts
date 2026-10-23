@@ -1,3 +1,4 @@
+import { locationOptions } from "./location-options";
 import { displayAnswer, coverageLed } from "./coverage-intake";
 import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
@@ -118,7 +119,14 @@ export async function submissionPDF(s: BusinessState, snapshot: Snapshot) {
       y = 780;
     }
     text(q.label, 10, true);
-    text(displayAnswer(q.id, s.answers[q.id].value, s.documents));
+    text(
+      displayAnswer(
+        q.id,
+        s.answers[q.id].value,
+        s.documents,
+        locationOptions(s.answers.locations?.value),
+      ),
+    );
     y -= 7;
   }
   heading("Coverage considerations - inferences");

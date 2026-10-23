@@ -3,6 +3,8 @@ import {
   displayAnswer,
   scheduleIssues,
 } from "./coverage-intake";
+import { scheduleRows } from "./coverage-intake";
+import { locationOptions } from "./location-options";
 import { createHash, randomUUID } from "node:crypto";
 import {
   activeQuestions,
@@ -59,6 +61,12 @@ export function saveAnswer(
   assertAccess(actor, s);
   if (rulesFor(s).find((q) => q.id === id)?.provenance.owner === "broker")
     requireBroker(actor);
+  if (id === "locations" && value.trim())
+    value = JSON.stringify(
+      scheduleRows(value).map((r) =>
+        r.reference?.trim() ? r : { ...r, reference: randomUUID() },
+      ),
+    );
   validateAnswer(s, id, value);
   const next = changed(s);
   next.answers = { ...s.answers };
@@ -234,7 +242,7 @@ export function renderSubmission(s: BusinessState, final = false): string {
   for (const q of facts) {
     const a = s.answers[q.id];
     lines.push(
-      `- ${q.label}: ${mdText(displayAnswer(q.id, a.value, s.documents))}`,
+      `- ${q.label}: ${mdText(displayAnswer(q.id, a.value, s.documents, locationOptions(s.answers.locations?.value)))}`,
       `  Source: ${a.source}; recorded ${a.recordedAt}; verified ${a.verifiedAt}; question ${q.provenance.reference} @ ${a.questionVersion}`,
     );
   }

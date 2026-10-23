@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuestionnaire, QuestionFeedback } from "./questionnaire-session";
 import { perform } from "@/app/actions";
 import { ScheduleInput } from "./schedule-input";
+import type { LocationOption } from "@/lib/location-options";
 import type { Rule, Answer } from "@/lib/types";
 export function QuestionControls({
   q,
@@ -10,7 +11,9 @@ export function QuestionControls({
   documents,
   broker,
   verified,
+  locations,
 }: {
+  locations: LocationOption[];
   q: Rule;
   answer?: Answer;
   documents: { id: string; name: string }[];
@@ -71,6 +74,7 @@ export function QuestionControls({
               id={q.id}
               value={value}
               documents={documents}
+              locations={locations}
               onDraftChange={change}
             />
           ) : q.type === "select" ? (

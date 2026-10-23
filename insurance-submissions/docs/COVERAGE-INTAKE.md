@@ -99,3 +99,14 @@ Coverage-led Yes/No answers save automatically through a serialized, authenticat
 A failed or stale save shows an error. Unconfirmed saves pause the queue until Review latest version. Drafts remain available for explicit Retry save, which is never an automatic overwrite of a newer revision.
 
 From an older application, Start updated intake from saved answers creates a new version-3 application with the same recorded values and source metadata, an explicit copiedFrom reference, and no carried verification or approval. The original application is unchanged. Supporting documents and client assignments must be added to the new application separately. No existing rule definition is updated in place.
+
+## Client-facing location selection
+
+New location records receive an internal reference automatically. Existing saved
+references are retained. Clients enter the address, tenure, occupancy and insurance
+responsibilities; property records select a persisted address from a dropdown.
+An incomplete or unsaved location is not chosen automatically. A removed location
+remains visibly unavailable until the user chooses a valid saved address. The
+PDF presents the linked address and tenure instead of asking readers to interpret
+internal reference codes. This presentation change preserves published question
+definitions and existing links; it does not require a new intake copy.

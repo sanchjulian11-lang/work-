@@ -331,7 +331,8 @@ describe("versioned coverage-led intake", () => {
         },
       ]),
     );
-    expect(text).toContain("LOC-1");
+    expect(text).toContain("Linked location");
+    expect(text).not.toContain("LOC-1");
     expect(text).not.toContain("999999");
   });
 });

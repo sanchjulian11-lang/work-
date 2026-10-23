@@ -1,3 +1,4 @@
+import { locationOptions } from "@/lib/location-options";
 import { QuestionnaireSession } from "@/components/questionnaire-session";
 import { QuestionControls } from "@/components/question-controls";
 import { ScheduleInput } from "@/components/schedule-input";
@@ -633,6 +634,9 @@ export default async function Page({
                               {coverageLed(s.rulesVersion) ? (
                                 <QuestionControls
                                   q={q}
+                                  locations={locationOptions(
+                                    s.answers.locations?.value,
+                                  )}
                                   answer={a}
                                   documents={s.documents.map((d) => ({
                                     id: d.id,

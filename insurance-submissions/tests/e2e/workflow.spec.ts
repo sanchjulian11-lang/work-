@@ -228,11 +228,9 @@ test("new coverage-led application branches and saves structured locations", asy
   await expect(page.locator("#answer-vehicle_schedule")).toHaveCount(0);
   const loc = page.locator("#question-locations");
   await loc.getByRole("button", { name: "Add record", exact: true }).click();
-  await loc
-    .getByLabel("Location reference (unique, e.g. LOC-1), record 1", {
-      exact: true,
-    })
-    .fill("LOC-1");
+  await expect(
+    loc.getByLabel("Location reference", { exact: false }),
+  ).toHaveCount(0);
   await loc
     .getByLabel("Full civic address and postal code, record 1", { exact: true })
     .fill("123 Fictional Street, London ON N6A 1A1");
@@ -266,6 +264,11 @@ test("new coverage-led application branches and saves structured locations", asy
     .getByRole("button", { name: "Add record", exact: true })
     .click();
   await property
+    .getByLabel("Business location, record 1", { exact: true })
+    .selectOption({
+      label: "123 Fictional Street, London ON N6A 1A1 — Leased",
+    });
+  await property
     .getByLabel("Property coverage requested at this location?, record 1", {
       exact: true,
     })
@@ -281,6 +284,21 @@ test("new coverage-led application branches and saves structured locations", asy
       { exact: true },
     ),
   ).toBeVisible();
+  await property
+    .getByLabel("Reason property coverage is not requested here, record 1", {
+      exact: true,
+    })
+    .fill("Fictional client declined this location.");
+  await property
+    .getByRole("button", { name: "Save answer", exact: true })
+    .click();
+  await expect(property.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(
+    property
+      .getByLabel("Business location, record 1", { exact: true })
+      .locator("option:checked"),
+  ).toHaveText("123 Fictional Street, London ON N6A 1A1 — Leased");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
