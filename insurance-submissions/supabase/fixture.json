@@ -1,0 +1,646 @@
+{
+  "business": {
+    "id": "00000000-0000-4000-8000-000000000010",
+    "organizationId": "00000000-0000-4000-8000-000000000001",
+    "assignedClientIds": [
+      "00000000-0000-4000-8000-000000000003"
+    ],
+    "revision": 1,
+    "rulesVersion": "ontario-contractors-2026.10.22-v1",
+    "fictional": true,
+    "profile": {
+      "legalName": "Maple Air HVAC Ltd. (Fictional)",
+      "operatingName": "Maple Air",
+      "city": "London",
+      "province": "ON",
+      "industry": "hvac",
+      "description": "Fictional HVAC contractor account for testing only."
+    },
+    "answers": {
+      "operations": {
+        "value": "Residential and light commercial HVAC installation, maintenance, and service.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "years": {
+        "value": "6",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "territory": {
+        "value": "Ontario only; local service within 100 km of London.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "experience": {
+        "value": "Fictional principal has 12 years HVAC experience; licensing evidence not yet supplied.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "revenue": {
+        "value": "750000",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "revenue_split": {
+        "value": "60% residential service, 20% residential installation, 20% commercial service.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "payroll": {
+        "value": "260000",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "employees": {
+        "value": "4",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "subcontractors": {
+        "value": "yes",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "subcontract_cost": {
+        "value": "90000",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "hot_work": {
+        "value": "yes",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "design": {
+        "value": "no",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "demolition": {
+        "value": "no",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "refrigerants": {
+        "value": "yes",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "vehicles": {
+        "value": "yes",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "equipment_value": {
+        "value": "85000",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "equipment_storage": {
+        "value": "Tools stored in a locked unit overnight; vans alarmed.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "premises": {
+        "value": "Leased 1,500 sq ft workshop in London, Ontario. Construction and protection details pending.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "current_insurance": {
+        "value": "Fictional existing CGL policy; expiry, limits, and deductibles not confirmed.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "claims": {
+        "value": "no",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      },
+      "coverage_request": {
+        "value": "Discuss CGL, equipment, and auto; limits and effective date not yet confirmed.",
+        "source": "client_statement",
+        "recordedBy": "00000000-0000-4000-8000-000000000003",
+        "recordedAt": "2026-10-22T12:00:00.000Z",
+        "questionVersion": "ontario-contractors-2026.10.22-v1"
+      }
+    },
+    "documents": []
+  },
+  "rules": [
+    {
+      "id": "operations",
+      "label": "Describe all operations, services, and work performed",
+      "section": "Business",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/operations",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "business_address",
+      "label": "Full legal business address and all operating locations",
+      "section": "Business",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/business_address",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "ownership",
+      "label": "Ownership structure and principal names",
+      "section": "Business",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/ownership",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "years",
+      "label": "Years operating",
+      "section": "Business",
+      "type": "number",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/years",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "min": 0,
+      "max": 150
+    },
+    {
+      "id": "territory",
+      "label": "Work territories, including any work outside Ontario",
+      "section": "Business",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/territory",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "experience",
+      "label": "Principal experience and applicable trade licences",
+      "section": "Business",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/experience",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "revenue",
+      "label": "Estimated annual gross revenue (CAD)",
+      "section": "Financial",
+      "type": "number",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/revenue",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "min": 0,
+      "max": 10000000000
+    },
+    {
+      "id": "revenue_split",
+      "label": "Revenue breakdown by operation and residential/commercial work (must total 100%)",
+      "section": "Financial",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/revenue_split",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "payroll",
+      "label": "Estimated annual payroll (CAD)",
+      "section": "Financial",
+      "type": "number",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/payroll",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "min": 0,
+      "max": 10000000000
+    },
+    {
+      "id": "employees",
+      "label": "Number of employees",
+      "section": "Financial",
+      "type": "number",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/employees",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "id": "subcontractors",
+      "label": "Do you use subcontractors?",
+      "section": "Operations",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/subcontractors",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "subcontract_cost",
+      "label": "Annual subcontractor costs (CAD)",
+      "section": "Operations",
+      "type": "number",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/subcontract_cost",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "min": 0,
+      "when": {
+        "id": "subcontractors",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "subcontract_controls",
+      "label": "Describe written contracts, certificates of insurance, and subcontractor controls",
+      "section": "Operations",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/subcontract_controls",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "subcontractors",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "hot_work",
+      "label": "Do you perform welding, brazing, torch work, or other hot work?",
+      "section": "Operations",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/hot_work",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "hot_work_controls",
+      "label": "Describe hot-work frequency, locations, permits, fire watch, and fire protection",
+      "section": "Operations",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/hot_work_controls",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "hot_work",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "design",
+      "label": "Do you provide design, specifications, or professional advice?",
+      "section": "Operations",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/design",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "design_details",
+      "label": "Describe design responsibility, qualifications, and contracts",
+      "section": "Operations",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/design_details",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "design",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "demolition",
+      "label": "Do you perform demolition?",
+      "section": "Operations",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/demolition",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "demolition_details",
+      "label": "Describe structural demolition, percent of operations, and hazardous material controls",
+      "section": "Operations",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/demolition_details",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "demolition",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "refrigerants",
+      "label": "Do you handle refrigerants or other potentially polluting materials?",
+      "section": "Trade specifics",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/refrigerants",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "industries": [
+        "hvac",
+        "plumbing",
+        "general"
+      ]
+    },
+    {
+      "id": "refrigerant_controls",
+      "label": "Describe refrigerant/material storage, transport, handling, and disposal",
+      "section": "Trade specifics",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/refrigerant_controls",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "refrigerants",
+        "equals": "yes"
+      },
+      "industries": [
+        "hvac",
+        "plumbing",
+        "general"
+      ]
+    },
+    {
+      "id": "electrical_scope",
+      "label": "Describe voltage range, industrial work, and energized-work procedures",
+      "section": "Trade specifics",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/electrical_scope",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "industries": [
+        "electrical"
+      ]
+    },
+    {
+      "id": "plumbing_scope",
+      "label": "Describe water damage prevention, testing, and any sprinkler work",
+      "section": "Trade specifics",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/plumbing_scope",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "industries": [
+        "plumbing"
+      ]
+    },
+    {
+      "id": "vehicles",
+      "label": "Are business vehicles used, owned, or leased?",
+      "section": "Assets",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/vehicles",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "vehicle_details",
+      "label": "Vehicle schedule, ownership, use, radius, and driver information",
+      "section": "Assets",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/vehicle_details",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "vehicles",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "equipment_value",
+      "label": "Tools and equipment replacement value (CAD)",
+      "section": "Assets",
+      "type": "number",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/equipment_value",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "min": 0
+    },
+    {
+      "id": "equipment_storage",
+      "label": "Describe tools/equipment storage, transport, and theft controls",
+      "section": "Assets",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/equipment_storage",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "premises",
+      "label": "Describe all premises, occupancy, construction, protection, and contents values",
+      "section": "Assets",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/premises",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "current_insurance",
+      "label": "Current insurer, policy expiry, limits and deductibles; state none if uninsured",
+      "section": "Insurance history",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/current_insurance",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "claims",
+      "label": "Any claims, losses, or incidents in the past five years?",
+      "section": "Insurance history",
+      "type": "boolean",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/claims",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    },
+    {
+      "id": "claims_details",
+      "label": "Provide dates, descriptions, amounts, status, and corrective actions for every loss",
+      "section": "Insurance history",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/claims_details",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      },
+      "when": {
+        "id": "claims",
+        "equals": "yes"
+      }
+    },
+    {
+      "id": "coverage_request",
+      "label": "Requested coverages, limits, effective date, and contractual requirements",
+      "section": "Insurance history",
+      "type": "text",
+      "required": true,
+      "provenance": {
+        "source": "Internal contractor intake specification",
+        "reference": "UW-CONTRACTORS-001/coverage_request",
+        "version": "ontario-contractors-2026.10.22-v1",
+        "owner": "client"
+      }
+    }
+  ]
+}
