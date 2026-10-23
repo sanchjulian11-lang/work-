@@ -216,17 +216,14 @@ test("new coverage-led application branches and saves structured locations", asy
   async function choose(id: string, option: string) {
     const article = page.locator(`#question-${id}`);
     await article.locator("select").selectOption(option);
-    await article
-      .getByRole("button", { name: "Save answer", exact: true })
-      .click();
     await expect(article.getByRole("status")).toHaveText("Saved");
   }
   await choose("cover_cgl", "yes");
-  await choose("vehicles", "yes");
-  await expect(page.locator("#answer-vehicle_schedule")).toHaveCount(0);
+  await expect(page.locator("#answer-vehicles")).toHaveCount(0);
   await choose("cover_auto", "yes");
   await expect(page.locator("#answer-vehicle_schedule")).toBeVisible();
   await expect(page.locator("#answer-driver_schedule")).toBeVisible();
+  await choose("vehicles", "yes");
   await choose("cover_auto", "no");
   await expect(page.locator("#answer-vehicle_schedule")).toHaveCount(0);
   const loc = page.locator("#question-locations");
@@ -311,4 +308,130 @@ test("new coverage-led application branches and saves structured locations", asy
     },
   );
   expect(denied.status()).toBe(403);
+});
+
+test("updated intake autosaves in order, retains drafts, and recovers from network and stale-session errors", async ({
+  page,
+  context,
+}) => {
+  test.setTimeout(120000);
+  await page.goto(
+    "/?business=00000000-0000-4000-8000-000000000010&tab=Questionnaire",
+  );
+  await page
+    .getByRole("button", {
+      name: "Start updated intake from saved answers",
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByText("Updated intake copied from saved answers.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  const business = new URL(page.url()).searchParams.get("business")!;
+  expect(business).not.toBe("00000000-0000-4000-8000-000000000010");
+  const q = (id: string) => page.locator(`#question-${id}`);
+  async function choose(id: string, option: string) {
+    await q(id).locator("select").selectOption(option);
+    await expect(q(id).getByRole("status")).toHaveText("Saved");
+  }
+  await choose("cover_cgl", "yes");
+  await choose("cover_auto", "no");
+  await expect(page.locator("#answer-vehicles")).toHaveCount(0);
+  await expect(
+    q("cover_cgl").getByText("Unverified", { exact: true }),
+  ).toBeVisible();
+  const draft =
+    "Fictional unsaved operations draft preserved while changing coverage.";
+  await page.locator("#answer-operations").fill(draft);
+  await q("cover_auto").locator("select").selectOption("yes");
+  await q("cover_property").locator("select").selectOption("yes");
+  await expect(q("cover_property").getByRole("status")).toHaveText("Saved");
+  await expect(page.locator("#answer-vehicles")).toBeVisible();
+  await expect(page.locator("#answer-property_schedule")).toBeVisible();
+  await expect(page.locator("#answer-operations")).toHaveValue(draft);
+  await expect(
+    q("operations").getByText("Unsaved changes", { exact: true }),
+  ).toBeVisible();
+  await q("operations")
+    .getByRole("button", { name: "Save answer", exact: true })
+    .click();
+  await expect(q("operations").getByRole("status")).toHaveText("Saved");
+  await choose("cover_auto", "no");
+  await expect(page.locator("#answer-vehicles")).toHaveCount(0);
+  await expect(page.locator("#answer-driver_schedule")).toHaveCount(0);
+  await choose("hot_work", "yes");
+  await page
+    .locator("#answer-hot_work_controls")
+    .fill("Fictional unsaved fire-watch details.");
+  await choose("hot_work", "no");
+  await expect(page.locator("#answer-hot_work_controls")).toHaveCount(0);
+  await choose("hot_work", "yes");
+  await expect(page.locator("#answer-hot_work_controls")).toHaveValue(
+    "Fictional unsaved fire-watch details.",
+  );
+  // Drop an action before it reaches the server; do not show a false Saved status.
+  let failOnce = true;
+  await page.route("**/*", async (route) => {
+    if (
+      failOnce &&
+      route.request().method() === "POST" &&
+      route.request().headers()["next-action"]
+    ) {
+      failOnce = false;
+      await route.abort("failed");
+    } else await route.continue();
+  });
+  await q("design").locator("select").selectOption("yes");
+  await expect(q("design").getByRole("alert")).toContainText(
+    "Save could not be confirmed",
+  );
+  await expect(q("design").locator("select")).toHaveValue("yes");
+  await page
+    .getByRole("button", { name: "Review latest version", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Review latest version", exact: true }),
+  ).toHaveCount(0);
+  await q("design")
+    .getByRole("button", { name: "Retry save", exact: true })
+    .click();
+  await expect(q("design").getByRole("status")).toHaveText("Saved");
+  await expect(
+    q("design").getByText("Unverified", { exact: true }),
+  ).toBeVisible();
+  await q("design")
+    .getByRole("button", { name: "Verify recorded statement", exact: true })
+    .click();
+  await expect(
+    q("design").getByText("Broker verified", { exact: true }),
+  ).toBeVisible();
+  // Another tab saves first. The stale tab must pause rather than overwrite it.
+  const other = await context.newPage();
+  await other.goto(`/?business=${business}&tab=Questionnaire`);
+  await other.locator("#answer-cover_equipment").selectOption("yes");
+  await expect(
+    other.locator("#question-cover_equipment").getByRole("status"),
+  ).toHaveText("Saved");
+  await q("cover_cgl").locator("select").selectOption("no");
+  await expect(q("cover_cgl").getByRole("alert")).toContainText(
+    "another session",
+  );
+  await page
+    .getByRole("button", { name: "Review latest version", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Review latest version", exact: true }),
+  ).toHaveCount(0);
+  await q("cover_cgl")
+    .getByRole("button", { name: "Retry save", exact: true })
+    .click();
+  await expect(q("cover_cgl").getByRole("status")).toHaveText("Saved");
+  await expect(page.locator("#answer-cgl_limits")).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator("#answer-cover_equipment")).toHaveValue("yes");
+  await expect(page.locator("#answer-cover_cgl")).toHaveValue("no");
+  await expect(page.locator("#answer-operations")).toHaveValue(draft);
+  await other.close();
 });

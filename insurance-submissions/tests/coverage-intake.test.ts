@@ -402,3 +402,46 @@ it("revokes the final market attestation and linked schedules after dependent ed
   s = put(s, "cover_auto", "no");
   expect(s.answers.auto_history.verifiedBy).toBeUndefined();
 });
+
+it("retains exact published v1 and v2 definitions while v3 gates vehicle use by auto selection", async () => {
+  const { createHash } = await import("node:crypto");
+  const { RULESETS, coverageCodes } = await import("../src/lib/rules");
+  const { LATEST_RULE_VERSION } = await import("../src/lib/coverage-intake");
+  expect(
+    createHash("sha256")
+      .update(JSON.stringify(RULESETS[RULE_VERSION]))
+      .digest("hex"),
+  ).toBe("8fb357e5cbd410f71661b216dd488b10377e6937c17bb971a0188f921bbba023");
+  expect(
+    createHash("sha256")
+      .update(JSON.stringify(RULESETS[COVERAGE_RULE_VERSION]))
+      .digest("hex"),
+  ).toBe("bfa89eb7736b8c98acb458637c954ae959344e15e287cab09407b669613e1c47");
+  let s = { ...fresh(), rulesVersion: LATEST_RULE_VERSION };
+  s = put(s, "cover_cgl", "yes");
+  s = put(s, "cover_auto", "no");
+  expect(activeQuestions(s).some((q) => q.id === "vehicles")).toBe(false);
+  // Retained historical exposure answers must not re-open auto or enter the export.
+  s.answers.vehicles = { ...sampleBusiness().answers.vehicles };
+  expect(coverageCodes(s)).not.toContain("auto");
+  s = put(s, "cover_auto", "yes");
+  expect(activeQuestions(s).some((q) => q.id === "vehicles")).toBe(true);
+});
+it("creates an explicit updated copy without carrying approval, verification, attachments or client access", async () => {
+  const { updatedIntakeCopy } = await import("../src/lib/domain");
+  const { LATEST_RULE_VERSION } = await import("../src/lib/coverage-intake");
+  const s = cglComplete();
+  const before = JSON.stringify(s);
+  const copy = updatedIntakeCopy(broker, s);
+  expect(copy.rulesVersion).toBe(LATEST_RULE_VERSION);
+  expect(copy.id).not.toBe(s.id);
+  expect(copy.answers.cover_cgl.value).toBe("yes");
+  expect(copy.answers.cover_cgl.source).toBe(s.answers.cover_cgl.source);
+  expect(copy.answers.cover_cgl.verifiedBy).toBeUndefined();
+  expect(copy.documents).toEqual([]);
+  expect(copy.assignedClientIds).toEqual([]);
+  expect(copy.approval).toBeUndefined();
+  expect(copy.copiedFrom?.businessId).toBe(s.id);
+  expect(JSON.stringify(s)).toBe(before);
+  expect(() => updatedIntakeCopy(client, s)).toThrow("Broker role");
+});

@@ -1,4 +1,4 @@
-import { displayAnswer, COVERAGE_RULE_VERSION } from "./coverage-intake";
+import { displayAnswer, coverageLed } from "./coverage-intake";
 import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -96,7 +96,7 @@ export async function submissionPDF(s: BusinessState, snapshot: Snapshot) {
   text(
     "All amounts are CAD. Recorded statements below were reviewed by the broker; verification is not independent proof.",
   );
-  if (s.rulesVersion === COVERAGE_RULE_VERSION) {
+  if (coverageLed(s.rulesVersion)) {
     heading("Submission scope");
     text(s.answers.market_status?.value || "Not assessed");
     text(s.answers.market_review?.value || "Not provided");

@@ -1,4 +1,4 @@
-# Coverage-led contractor intake, version 2
+# Coverage-led contractor intake
 
 This release is an internal common-intake baseline for Ontario contractors and
 trades. It is **not** a verified insurer application, a complete catalogue of
@@ -13,7 +13,7 @@ baseline was written. A broker must validate the questions before real use.
   from exposure answers. A client cannot change broker-owned coverage or market
   decisions through a crafted server-action request.
 - Core business, financial, operations, claims, location, and exposure questions
-  remain relevant even where an associated coverage is not requested.
+  remain relevant even where an associated coverage is not requested. Version 3 keeps vehicle-use questions inside the auto module; a CGL market may add its own explicit supplemental requirements.
 - Only selected coverage modules open. Detailed auto schedules do not open solely
   because the business uses a vehicle. CGL can coexist with property and E&O.
 - Location records distinguish ownership, tenancy and other arrangements, and
@@ -56,8 +56,8 @@ in the PDF and audit copy.
 ## Versioning and deployment
 
 Existing applications retain `ontario-contractors-2026.10.22-v1` and their original
-approvals. They are never silently reinterpreted. New applications use
-`ontario-contractors-2026.10.23-v2`. On creation, the server publishes that exact
+approvals. They are never silently reinterpreted. Version 2 (`ontario-contractors-2026.10.23-v2`) is preserved unchanged. New applications use
+`ontario-contractors-2026.10.23-v3`, where vehicle-use questions appear only when auto is selected. On creation, the server publishes that exact
 immutable rule definition (including schedule fields, conditions and dependencies)
 and checks for an exact match before creating the application. No schema change
 or destructive migration is required. Rule versions must not be edited after
@@ -91,3 +91,11 @@ supporting files separately.
 - Add source-validated industry libraries beyond contractors/trades, formal
   approval of the baseline by a licensed Ontario commercial broker, then
   structured limit/deductible schedules, attachment packaging and renewal flows.
+
+## Autosave and updated copies
+
+Coverage-led Yes/No answers save automatically through a serialized, authenticated server-action queue. Text, numeric values, enumerated non-boolean choices and schedules use Save answer. Verification is always a separate broker action. Server-confirmed saves refresh follow-ups without navigating or clearing other unsaved drafts. Drafts stay in tab memory, including temporarily hidden follow-ups; they are not written to localStorage or sent to OpenAI. Leaving the questionnaire or reloading can discard unsaved drafts.
+
+A failed or stale save shows an error. Unconfirmed saves pause the queue until Review latest version. Drafts remain available for explicit Retry save, which is never an automatic overwrite of a newer revision.
+
+From an older application, Start updated intake from saved answers creates a new version-3 application with the same recorded values and source metadata, an explicit copiedFrom reference, and no carried verification or approval. The original application is unchanged. Supporting documents and client assignments must be added to the new application separately. No existing rule definition is updated in place.

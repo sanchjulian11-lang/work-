@@ -63,6 +63,7 @@ export type BusinessState = {
   organizationId: string;
   assignedClientIds: string[];
   revision: number;
+  copiedFrom?: { businessId: string; revision: number; rulesVersion: string };
   rulesVersion: string;
   fictional: boolean;
   profile: Profile;

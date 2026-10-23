@@ -24,9 +24,10 @@ import {
   requireBroker,
   saveAnswer,
   verifyAnswer,
+  updatedIntakeCopy,
 } from "@/lib/domain";
 import { actionDestination } from "@/lib/navigation";
-import { COVERAGE_RULE_VERSION } from "@/lib/coverage-intake";
+import { LATEST_RULE_VERSION } from "@/lib/coverage-intake";
 import { generatePlan } from "@/lib/ai";
 import { inspectUpload, MAX_UPLOAD_BYTES } from "@/lib/documents";
 import type { BusinessState, DocumentRecord, Profile } from "@/lib/types";
@@ -101,7 +102,7 @@ export async function perform(form: FormData) {
         organizationId: actor.organizationId,
         assignedClientIds: [],
         revision: 1,
-        rulesVersion: COVERAGE_RULE_VERSION,
+        rulesVersion: LATEST_RULE_VERSION,
         fictional: isDemo() || field(form, "fictional") === "on",
         profile,
         answers: {},
@@ -118,6 +119,14 @@ export async function perform(form: FormData) {
       let next: BusinessState;
       let detail: Record<string, unknown> = {};
       switch (action) {
+        case "update_intake": {
+          const copy = updatedIntakeCopy(actor, s);
+          await createBusiness(actor, copy);
+          target = copy.id;
+          message =
+            "Updated intake created from saved answers. Review and verify them; reattach supporting documents and assign clients separately.";
+          break;
+        }
         case "answer":
           next = saveAnswer(
             actor,
@@ -255,7 +264,8 @@ export async function perform(form: FormData) {
         default:
           throw new Error("Unknown action");
       }
-      if (!redirectAfterUpload) await commit(actor, s, next!, action, detail);
+      if (!redirectAfterUpload && action !== "update_intake")
+        await commit(actor, s, next!, action, detail);
     }
   } catch (error) {
     const text =
@@ -267,4 +277,47 @@ export async function perform(form: FormData) {
     redirect(actionDestination(action, target, "error", text, questionId));
   }
   redirect(actionDestination(action, target, "message", message, questionId));
+}
+
+export async function updateQuestion(
+  form: FormData,
+): Promise<{ revision?: number; error?: string; conflict?: boolean }> {
+  try {
+    await sameOrigin();
+    const actor = await currentActor();
+    if (!actor) throw new Error("Sign in first");
+    const state = await getBusiness(actor, field(form, "businessId"));
+    assertAccess(actor, state);
+    if (Number(field(form, "revision")) !== state.revision)
+      return {
+        error:
+          "Application changed in another session. Review the latest version before retrying.",
+        conflict: true,
+      };
+    const action = field(form, "action"),
+      id = field(form, "questionId");
+    if (!["answer", "verify"].includes(action))
+      throw new Error("Unsupported question action");
+    const next =
+      action === "verify"
+        ? verifyAnswer(actor, state, id)
+        : saveAnswer(actor, state, id, field(form, "value"));
+    try {
+      await commit(actor, state, next, action, { questionId: id });
+    } catch {
+      return {
+        error:
+          "The application may have changed. Review the latest version before retrying.",
+        conflict: true,
+      };
+    }
+    return { revision: next.revision };
+  } catch (e) {
+    return {
+      error:
+        e instanceof Error
+          ? e.message
+          : "Could not save. Retry when connected.",
+    };
+  }
 }

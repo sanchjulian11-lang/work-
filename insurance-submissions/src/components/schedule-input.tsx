@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   SCHEDULES,
   scheduleRows,
@@ -9,10 +9,12 @@ export function ScheduleInput({
   id,
   value,
   documents,
+  onDraftChange,
 }: {
   id: string;
   value?: string;
   documents: { id: string; name: string }[];
+  onDraftChange?: (value: string) => void;
 }) {
   const [rows, setRows] = useState<Record<string, string>[]>(() => {
     try {
@@ -21,6 +23,19 @@ export function ScheduleInput({
       return [];
     }
   });
+  useEffect(() => {
+    try {
+      setRows((current) =>
+        JSON.stringify(current) === (value || "[]")
+          ? current
+          : scheduleRows(value || "[]"),
+      );
+    } catch {}
+  }, [value]);
+  const updateRows = (next: Record<string, string>[]) => {
+    setRows(next);
+    onDraftChange?.(JSON.stringify(next));
+  };
   const fields = SCHEDULES[id];
   return (
     <div id={`answer-${id}`}>
@@ -44,7 +59,7 @@ export function ScheduleInput({
                       aria-label={`${f.label}, record ${i + 1}`}
                       value={row[f.id] || ""}
                       onChange={(e) =>
-                        setRows(
+                        updateRows(
                           rows.map((r, n) =>
                             n === i ? { ...r, [f.id]: e.target.value } : r,
                           ),
@@ -72,7 +87,7 @@ export function ScheduleInput({
                       maxLength={2000}
                       value={row[f.id] || ""}
                       onChange={(e) =>
-                        setRows(
+                        updateRows(
                           rows.map((r, n) =>
                             n === i ? { ...r, [f.id]: e.target.value } : r,
                           ),
@@ -86,7 +101,7 @@ export function ScheduleInput({
           <button
             type="button"
             className="text-button"
-            onClick={() => setRows(rows.filter((_, n) => n !== i))}
+            onClick={() => updateRows(rows.filter((_, n) => n !== i))}
           >
             Remove record {i + 1}
           </button>
@@ -96,7 +111,7 @@ export function ScheduleInput({
         type="button"
         className="secondary small-button"
         disabled={rows.length >= 50}
-        onClick={() => setRows([...rows, {}])}
+        onClick={() => updateRows([...rows, {}])}
       >
         Add record
       </button>

@@ -1,4 +1,8 @@
-import { displayAnswer, scheduleIssues } from "./coverage-intake";
+import {
+  LATEST_RULE_VERSION,
+  displayAnswer,
+  scheduleIssues,
+} from "./coverage-intake";
 import { createHash, randomUUID } from "node:crypto";
 import {
   activeQuestions,
@@ -266,4 +270,35 @@ export function renderSubmission(s: BusinessState, final = false): string {
     "Prepared for manual broker handling. No binding authority or market acceptance is implied.",
   );
   return lines.filter((line) => line !== undefined).join("\n");
+}
+
+export function updatedIntakeCopy(
+  actor: Actor,
+  s: BusinessState,
+): BusinessState {
+  assertAccess(actor, s);
+  requireBroker(actor);
+  if (s.rulesVersion === LATEST_RULE_VERSION)
+    throw new Error("This application already uses the current rules.");
+  return {
+    id: randomUUID(),
+    organizationId: s.organizationId,
+    assignedClientIds: [],
+    revision: 1,
+    rulesVersion: LATEST_RULE_VERSION,
+    fictional: s.fictional,
+    profile: { ...s.profile },
+    answers: Object.fromEntries(
+      Object.entries(s.answers).map(([id, a]) => {
+        const { verifiedBy, verifiedAt, ...record } = a;
+        return [id, record];
+      }),
+    ),
+    documents: [],
+    copiedFrom: {
+      businessId: s.id,
+      revision: s.revision,
+      rulesVersion: s.rulesVersion,
+    },
+  };
 }

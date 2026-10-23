@@ -1,5 +1,11 @@
+import { QuestionnaireSession } from "@/components/questionnaire-session";
+import { QuestionControls } from "@/components/question-controls";
 import { ScheduleInput } from "@/components/schedule-input";
-import { scheduleIssues, COVERAGE_RULE_VERSION } from "@/lib/coverage-intake";
+import {
+  scheduleIssues,
+  LATEST_RULE_VERSION,
+  coverageLed,
+} from "@/lib/coverage-intake";
 import Link from "next/link";
 import { configured, currentActor, isDemo } from "@/lib/auth";
 import { listBusinesses, auditFor, clientMembers } from "@/lib/repository";
@@ -309,12 +315,14 @@ export default async function Page({
               ON <span>Contractors & trades</span>
             </span>
           </div>
-          {query.error && !questionFeedback && (
-            <div className="notice error" role="alert">
-              {query.error}
-            </div>
-          )}
-          {query.message && !questionFeedback && (
+          {query.error &&
+            !questionFeedback &&
+            (tab !== "Questionnaire" || !query.question) && (
+              <div className="notice error" role="alert">
+                {query.error}
+              </div>
+            )}
+          {query.message && !questionFeedback && tab !== "Questionnaire" && (
             <div className="notice success" role="status">
               {query.message}
             </div>
@@ -329,6 +337,7 @@ export default async function Page({
                 }
               >
                 {b.profile.operatingName || b.profile.legalName}
+                {b.copiedFrom ? " · updated intake" : ""}
               </Link>
             ))}
           </div>
@@ -520,9 +529,37 @@ export default async function Page({
                 </section>
               )}
               {tab === "Questionnaire" && (
-                <>
+                <QuestionnaireSession
+                  key={s.id}
+                  businessId={s.id}
+                  revision={s.revision}
+                  autoSave={coverageLed(s.rulesVersion)}
+                >
+                  {s.copiedFrom && (
+                    <p className="notice">
+                      Updated intake copied from saved answers. Review and
+                      verify the answers again, reattach supporting documents,
+                      and assign clients separately. The original application is
+                      retained.
+                    </p>
+                  )}
+                  {broker && s.rulesVersion !== LATEST_RULE_VERSION && (
+                    <section className="panel">
+                      <h2>Updated questionnaire available</h2>
+                      <p>
+                        The updated workflow keeps vehicle-use questions inside
+                        auto coverage. Start an updated copy with your saved
+                        answers. Verification and approval must be reviewed
+                        again; documents and client assignments are not copied.
+                      </p>
+                      <form action={perform}>
+                        <Hidden s={s} action="update_intake" />
+                        <button>Start updated intake from saved answers</button>
+                      </form>
+                    </section>
+                  )}
                   <div className="notice">
-                    {s.rulesVersion === COVERAGE_RULE_VERSION
+                    {coverageLed(s.rulesVersion)
                       ? "Coverage-led common intake: the broker selects requested coverages. Only their detailed modules open. "
                       : "Legacy contractor intake. Create a new application to use coverage-led intake; this record retains its original rules. "}
                     Answer only what is known. Leave missing information blank.
@@ -544,14 +581,16 @@ export default async function Page({
                               key={q.id}
                               id={`question-${q.id}`}
                             >
-                              {questionFeedback &&
+                              {!coverageLed(s.rulesVersion) &&
+                                questionFeedback &&
                                 query.question === q.id &&
                                 query.error && (
                                   <div className="notice error" role="alert">
                                     {query.error}
                                   </div>
                                 )}
-                              {questionFeedback &&
+                              {!coverageLed(s.rulesVersion) &&
+                                questionFeedback &&
                                 query.question === q.id &&
                                 query.message && (
                                   <div className="notice success" role="status">
@@ -591,52 +630,70 @@ export default async function Page({
                                   {q.when.equals}
                                 </p>
                               )}
-                              <form action={perform}>
-                                <Hidden s={s} action="answer" />
-                                <input
-                                  type="hidden"
-                                  name="questionId"
-                                  value={q.id}
+                              {coverageLed(s.rulesVersion) ? (
+                                <QuestionControls
+                                  q={q}
+                                  answer={a}
+                                  documents={s.documents.map((d) => ({
+                                    id: d.id,
+                                    name: d.name,
+                                  }))}
+                                  broker={broker}
+                                  verified={isVerified(s, q.id)}
                                 />
-                                <fieldset
-                                  disabled={
-                                    !broker && q.provenance.owner === "broker"
-                                  }
-                                >
-                                  {q.provenance.owner === "broker" && (
-                                    <p className="fine">
-                                      Broker decision / review required
-                                    </p>
-                                  )}
-                                  <AnswerInput
-                                    q={q}
-                                    value={a?.value}
-                                    documents={s.documents}
-                                  />
-                                  <div className="answer-actions">
-                                    <button className="secondary small-button">
-                                      Save answer
-                                    </button>
-                                    <span className="fine">
-                                      {a
-                                        ? `${a.source === "client_statement" ? "Client statement" : "Broker recorded"} · ${new Date(a.recordedAt).toLocaleDateString("en-CA", { timeZone: "UTC" })}`
-                                        : "No recorded statement"}
-                                    </span>
-                                  </div>
-                                </fieldset>
-                              </form>
-                              {broker && a?.value && !isVerified(s, q.id) && (
-                                <form action={perform}>
-                                  <Hidden s={s} action="verify" />
-                                  <input
-                                    type="hidden"
-                                    name="questionId"
-                                    value={q.id}
-                                  />
-                                  <button className="text-button">
-                                    Verify recorded statement
-                                  </button>
-                                </form>
+                              ) : (
+                                <>
+                                  <form action={perform}>
+                                    <Hidden s={s} action="answer" />
+                                    <input
+                                      type="hidden"
+                                      name="questionId"
+                                      value={q.id}
+                                    />
+                                    <fieldset
+                                      disabled={
+                                        !broker &&
+                                        q.provenance.owner === "broker"
+                                      }
+                                    >
+                                      {q.provenance.owner === "broker" && (
+                                        <p className="fine">
+                                          Broker decision / review required
+                                        </p>
+                                      )}
+                                      <AnswerInput
+                                        q={q}
+                                        value={a?.value}
+                                        documents={s.documents}
+                                      />
+                                      <div className="answer-actions">
+                                        <button className="secondary small-button">
+                                          Save answer
+                                        </button>
+                                        <span className="fine">
+                                          {a
+                                            ? `${a.source === "client_statement" ? "Client statement" : "Broker recorded"} · ${new Date(a.recordedAt).toLocaleDateString("en-CA", { timeZone: "UTC" })}`
+                                            : "No recorded statement"}
+                                        </span>
+                                      </div>
+                                    </fieldset>
+                                  </form>
+                                  {broker &&
+                                    a?.value &&
+                                    !isVerified(s, q.id) && (
+                                      <form action={perform}>
+                                        <Hidden s={s} action="verify" />
+                                        <input
+                                          type="hidden"
+                                          name="questionId"
+                                          value={q.id}
+                                        />
+                                        <button className="text-button">
+                                          Verify recorded statement
+                                        </button>
+                                      </form>
+                                    )}
+                                </>
                               )}
                               <details>
                                 <summary>
@@ -663,7 +720,7 @@ export default async function Page({
                         })}
                     </section>
                   ))}
-                </>
+                </QuestionnaireSession>
               )}
               {tab === "Documents" && (
                 <div className="two-col">
@@ -984,7 +1041,7 @@ export default async function Page({
             <span>·</span> Broker-led placement
             <br />
             <small>
-              {s?.rulesVersion ?? COVERAGE_RULE_VERSION} · Common broker intake
+              {s?.rulesVersion ?? LATEST_RULE_VERSION} · Common broker intake
               specification; broker validation required before live use.
             </small>
           </footer>

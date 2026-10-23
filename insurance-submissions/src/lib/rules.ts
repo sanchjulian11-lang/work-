@@ -1,5 +1,7 @@
 import {
   COVERAGE_RULE_VERSION,
+  LATEST_RULE_VERSION,
+  coverageLed,
   coverageRules,
   intakeIssues,
   scheduleIssues,
@@ -216,6 +218,7 @@ export const CONTRACTOR_RULES: Rule[] = [
 export const RULESETS: Record<string, Rule[]> = {
   [RULE_VERSION]: CONTRACTOR_RULES,
   [COVERAGE_RULE_VERSION]: coverageRules(CONTRACTOR_RULES),
+  [LATEST_RULE_VERSION]: coverageRules(CONTRACTOR_RULES, LATEST_RULE_VERSION),
 };
 export function rulesFor(s: BusinessState): Rule[] {
   const rules = RULESETS[s.rulesVersion];
@@ -279,12 +282,14 @@ export function coverageCodes(s: BusinessState): string[] {
   const result = ["cgl"];
   if (Number(s.answers.equipment_value?.value) > 0) result.push("equipment");
   if (
-    s.answers.vehicles?.value === "yes" ||
+    (s.answers.vehicles?.value === "yes" &&
+      (s.rulesVersion !== LATEST_RULE_VERSION ||
+        s.answers.cover_auto?.value === "yes")) ||
     s.answers.cover_auto?.value === "yes"
   )
     result.push("auto");
   if (
-    s.rulesVersion === COVERAGE_RULE_VERSION &&
+    coverageLed(s.rulesVersion) &&
     (s.answers.cover_property?.value === "yes" ||
       (() => {
         try {
@@ -348,7 +353,7 @@ export function completeness(s: BusinessState) {
     const raw = s.answers[q.id]?.value;
     const value = raw ? answerQualityText(q.id, raw) : raw;
     if (
-      s.rulesVersion === COVERAGE_RULE_VERSION &&
+      coverageLed(s.rulesVersion) &&
       value &&
       /\b(?:unknown|outstanding|tbd|to be supplied)\b/i.test(value)
     )

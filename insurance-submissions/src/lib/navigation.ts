@@ -1,6 +1,7 @@
 // Only known local destinations are allowed; never redirect to a submitted URL.
 const actionTabs: Record<string, string> = {
   answer: "Questionnaire",
+  update_intake: "Questionnaire",
   verify: "Questionnaire",
   upload: "Documents",
   document_review: "Documents",

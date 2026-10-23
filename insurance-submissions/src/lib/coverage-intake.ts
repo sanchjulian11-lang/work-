@@ -1,5 +1,8 @@
 import type { BusinessState, Rule } from "./types";
 export const COVERAGE_RULE_VERSION = "ontario-contractors-2026.10.23-v2";
+export const LATEST_RULE_VERSION = "ontario-contractors-2026.10.23-v3";
+export const coverageLed = (version: string) =>
+  [COVERAGE_RULE_VERSION, LATEST_RULE_VERSION].includes(version);
 export type ScheduleField = {
   id: string;
   label: string;
@@ -340,7 +343,10 @@ const brokerRule = (
     owner: "broker" as const,
   },
 });
-export function coverageRules(legacy: Rule[]): Rule[] {
+export function coverageRules(
+  legacy: Rule[],
+  version = COVERAGE_RULE_VERSION,
+): Rule[] {
   const selected = ["cgl", "property", "auto", "equipment", "professional"];
   const selectors = selected.map((code) =>
     brokerRule(
@@ -527,6 +533,17 @@ export function coverageRules(legacy: Rule[]): Rule[] {
   const coverageParents = selectors.map((q) => q.id);
   return definitions.map((q) => ({
     ...q,
+    ...(version === LATEST_RULE_VERSION
+      ? {
+          provenance: { ...q.provenance, version },
+          ...(q.id === "vehicles"
+            ? {
+                section: "Commercial auto details",
+                when: { id: "cover_auto", equals: "yes" },
+              }
+            : {}),
+        }
+      : {}),
     dependsOn: [
       ...(q.dependsOn ?? []),
       ...(["coverage_scope", "market_status", "market_review"].includes(q.id)
@@ -543,7 +560,7 @@ export function coverageRules(legacy: Rule[]): Rule[] {
   }));
 }
 export function intakeIssues(s: BusinessState): string[] {
-  if (s.rulesVersion !== COVERAGE_RULE_VERSION) return [];
+  if (!coverageLed(s.rulesVersion)) return [];
   const out: string[] = [];
   if (
     !["cgl", "property", "auto", "equipment", "professional"].some(
