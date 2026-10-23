@@ -1,3 +1,4 @@
+import { displayAnswer, scheduleIssues } from "./coverage-intake";
 import { createHash, randomUUID } from "node:crypto";
 import {
   activeQuestions,
@@ -52,6 +53,8 @@ export function saveAnswer(
   value: string,
 ): BusinessState {
   assertAccess(actor, s);
+  if (rulesFor(s).find((q) => q.id === id)?.provenance.owner === "broker")
+    requireBroker(actor);
   validateAnswer(s, id, value);
   const next = changed(s);
   next.answers = { ...s.answers };
@@ -67,7 +70,12 @@ export function saveAnswer(
   // Parent changes revoke dependent verification, including currently hidden descendants.
   const revoke = (parent: string) => {
     for (const q of activeOrAll(s))
-      if (q.when?.id === parent && next.answers[q.id]) {
+      if (
+        (q.when?.id === parent ||
+          q.conditions?.some((c) => c.id === parent) ||
+          q.dependsOn?.includes(parent)) &&
+        next.answers[q.id]
+      ) {
         const { verifiedBy: _, verifiedAt: __, ...answer } = next.answers[q.id];
         next.answers[q.id] = answer;
         revoke(q.id);
@@ -91,6 +99,8 @@ export function verifyAnswer(
   if (!answer?.value.trim() || !activeQuestions(s).some((q) => q.id === id))
     throw new Error("An active recorded answer is required");
   validateAnswer(s, id, answer.value);
+  const problems = scheduleIssues(id, answer.value);
+  if (problems.length) throw new Error(problems.slice(0, 3).join(" "));
   const next = changed(s);
   next.answers = {
     ...s.answers,
@@ -211,13 +221,16 @@ export function renderSubmission(s: BusinessState, final = false): string {
     `Rules: ${s.rulesVersion} · Revision: ${s.revision}`,
     s.fictional ? "FICTIONAL ACCOUNT — NOT FOR REAL PLACEMENT" : "",
     "",
+    ...(s.answers.market_status
+      ? [`Submission scope: ${mdText(s.answers.market_status.value)}`, ""]
+      : []),
     "## Recorded statements verified by broker",
     "Verification means broker-reviewed recorded statements, not independent proof.",
   ];
   for (const q of facts) {
     const a = s.answers[q.id];
     lines.push(
-      `- ${q.label}: ${mdText(a.value)}`,
+      `- ${q.label}: ${mdText(displayAnswer(q.id, a.value, s.documents))}`,
       `  Source: ${a.source}; recorded ${a.recordedAt}; verified ${a.verifiedAt}; question ${q.provenance.reference} @ ${a.questionVersion}`,
     );
   }

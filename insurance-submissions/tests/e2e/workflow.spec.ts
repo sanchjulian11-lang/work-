@@ -113,12 +113,6 @@ test("complete broker review, approve, export, and revoke approval after a chang
     "Broker approval recorded",
   );
   await page.goto("/?tab=Broker%20review");
-  const pending = page.waitForEvent("download", { timeout: 15000 });
-  await page
-    .getByRole("button", { name: "Generate final submission (.md)" })
-    .click();
-  const download = await pending;
-  expect(download.suggestedFilename()).toMatch(/submission-.*\.md$/);
   const pdfPending = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download submission PDF" }).click();
   const pdfDownload = await pdfPending;
@@ -136,7 +130,7 @@ test("complete broker review, approve, export, and revoke approval after a chang
     .click();
   await page.goto("/?tab=Broker%20review");
   await expect(
-    page.getByRole("button", { name: "Generate final submission (.md)" }),
+    page.getByRole("button", { name: "Download submission PDF" }),
   ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Approve this revision" }),
@@ -186,4 +180,135 @@ test("save, verify, and validation errors stay at the same question", async ({
   await expect(
     question.getByText("Broker verified", { exact: true }),
   ).toBeVisible();
+});
+
+test("new coverage-led application branches and saves structured locations", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  await page
+    .getByText("Create another business profile", { exact: true })
+    .click();
+  const create = page.locator("form").filter({
+    has: page.getByRole("button", {
+      name: "Create application",
+      exact: true,
+    }),
+  });
+  await create
+    .getByLabel("Legal name", { exact: true })
+    .fill("Coverage Branching HVAC (Fictional)");
+  await create
+    .getByLabel("Operating name", { exact: true })
+    .fill("Coverage Branching Test");
+  await create.getByLabel("City", { exact: true }).fill("London");
+  await create
+    .getByRole("button", { name: "Create application", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText("Saved");
+  const business = new URL(page.url()).searchParams.get("business")!;
+  await page.getByRole("link", { name: "Questionnaire", exact: true }).click();
+  await expect(
+    page.getByText("Coverage-led common intake:", { exact: false }),
+  ).toBeVisible();
+  await expect(page.locator("#answer-vehicle_schedule")).toHaveCount(0);
+  async function choose(id: string, option: string) {
+    const article = page.locator(`#question-${id}`);
+    await article.locator("select").selectOption(option);
+    await article
+      .getByRole("button", { name: "Save answer", exact: true })
+      .click();
+    await expect(article.getByRole("status")).toHaveText("Saved");
+  }
+  await choose("cover_cgl", "yes");
+  await choose("vehicles", "yes");
+  await expect(page.locator("#answer-vehicle_schedule")).toHaveCount(0);
+  await choose("cover_auto", "yes");
+  await expect(page.locator("#answer-vehicle_schedule")).toBeVisible();
+  await expect(page.locator("#answer-driver_schedule")).toBeVisible();
+  await choose("cover_auto", "no");
+  await expect(page.locator("#answer-vehicle_schedule")).toHaveCount(0);
+  const loc = page.locator("#question-locations");
+  await loc.getByRole("button", { name: "Add record", exact: true }).click();
+  await loc
+    .getByLabel("Location reference (unique, e.g. LOC-1), record 1", {
+      exact: true,
+    })
+    .fill("LOC-1");
+  await loc
+    .getByLabel("Full civic address and postal code, record 1", { exact: true })
+    .fill("123 Fictional Street, London ON N6A 1A1");
+  await loc
+    .getByLabel("Tenure, record 1", { exact: true })
+    .selectOption("leased");
+  await loc
+    .getByLabel(
+      "Your occupancy, other occupants, and neighbouring exposures, record 1",
+      { exact: true },
+    )
+    .fill("Fictional HVAC workshop");
+  await loc
+    .getByLabel(
+      "Lease / ownership responsibilities and insurance obligations, record 1",
+      { exact: true },
+    )
+    .fill(
+      "Tenant insures contents and improvements; landlord insures building.",
+    );
+  await loc.getByRole("button", { name: "Save answer", exact: true }).click();
+  await expect(loc.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(loc.getByLabel("Tenure, record 1", { exact: true })).toHaveValue(
+    "leased",
+  );
+  await choose("cover_property", "yes");
+  await expect(page.locator("#answer-property_schedule")).toBeVisible();
+  const property = page.locator("#question-property_schedule");
+  await property
+    .getByRole("button", { name: "Add record", exact: true })
+    .click();
+  await property
+    .getByLabel("Property coverage requested at this location?, record 1", {
+      exact: true,
+    })
+    .selectOption("no");
+  await expect(
+    property.getByLabel("Wall, roof, and floor construction, record 1", {
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect(
+    property.getByLabel(
+      "Reason property coverage is not requested here, record 1",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.getByRole("link", { name: "Broker review", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Approve this revision" }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Preview as client" }).click();
+  await expect(
+    page.getByRole("link", { name: "Broker review", exact: true }),
+  ).toHaveCount(0);
+  await page.goto(`/?business=${business}&tab=Questionnaire`);
+  // New unassigned business is never exposed to a client merely by supplying its ID.
+  await expect(
+    page.getByRole("heading", { name: "Coverage Branching HVAC (Fictional)" }),
+  ).toHaveCount(0);
+  const denied = await page.request.post(
+    `/api/submission/${business}?format=pdf`,
+    {
+      headers: { origin: "http://127.0.0.1:3100" },
+    },
+  );
+  expect(denied.status()).toBe(403);
 });

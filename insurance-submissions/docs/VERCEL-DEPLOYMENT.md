@@ -42,6 +42,6 @@ provenance appendix. All pages of a fictional account carry a test label.
 The PDF uses bundled, licensed DejaVu fonts; no remote rendering service receives
 client data. Supporting documents are listed, not embedded. Brokers must attach
 those files separately and check any insurer-specific application requirements.
-The original Markdown export remains available. Both exports require current
+The PDF is the only export button. The authenticated legacy Markdown endpoint remains for compatibility. Both formats require current
 broker approval and record an export snapshot. Changing answers invalidates
 approval. No email or insurer transmission occurs.

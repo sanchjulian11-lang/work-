@@ -18,7 +18,7 @@ async function asUser(id: string, sql: string) {
 }
 beforeAll(async () => {
   await db.exec(
-    `create role anon;create role authenticated;create role service_role;create schema auth;create schema storage;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`,
+    `create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema storage;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`,
   );
   await db.exec(
     await readFile("supabase/migrations/202610220001_initial.sql", "utf8"),
@@ -179,4 +179,46 @@ describe("real PostgreSQL migration and row-level security", () => {
       ),
     ).rejects.toThrow();
   });
+});
+
+it("publishes a second immutable ruleset and creates a separately pinned application using service-role grants", async () => {
+  const { COVERAGE_RULE_VERSION } = await import("../src/lib/coverage-intake");
+  const { RULESETS } = await import("../src/lib/rules");
+  await db.exec("set role service_role");
+  try {
+    await db.query(
+      "insert into industry_rules(version,industry,provenance,rules) values($1,$2,$3,$4) on conflict(version) do nothing",
+      [
+        COVERAGE_RULE_VERSION,
+        "contractors",
+        "Internal common intake; broker validation required",
+        JSON.stringify(RULESETS[COVERAGE_RULE_VERSION]),
+      ],
+    );
+    const state = {
+      ...sample,
+      id: "00000000-0000-4000-8000-000000000020",
+      revision: 1,
+      rulesVersion: COVERAGE_RULE_VERSION,
+      answers: {},
+      assignedClientIds: [],
+    };
+    await db.query("select create_business($1,$2)", [
+      broker,
+      JSON.stringify(state),
+    ]);
+    const result = await db.query<{ rules_version: string }>(
+      "select rules_version from businesses where id=$1",
+      [state.id],
+    );
+    expect(result.rows[0].rules_version).toBe(COVERAGE_RULE_VERSION);
+    await expect(
+      db.query("update industry_rules set provenance=$1 where version=$2", [
+        "changed",
+        COVERAGE_RULE_VERSION,
+      ]),
+    ).rejects.toThrow();
+  } finally {
+    await db.exec("reset role");
+  }
 });

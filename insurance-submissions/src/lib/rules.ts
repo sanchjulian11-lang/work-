@@ -1,3 +1,11 @@
+import {
+  COVERAGE_RULE_VERSION,
+  coverageRules,
+  intakeIssues,
+  scheduleIssues,
+  scheduleRows,
+  answerQualityText,
+} from "./coverage-intake";
 import type { BusinessState, Rule } from "./types";
 export const RULE_VERSION = "ontario-contractors-2026.10.22-v1";
 // Internal starter rules, not insurer-approved forms or a statement of market appetite.
@@ -207,6 +215,7 @@ export const CONTRACTOR_RULES: Rule[] = [
 ];
 export const RULESETS: Record<string, Rule[]> = {
   [RULE_VERSION]: CONTRACTOR_RULES,
+  [COVERAGE_RULE_VERSION]: coverageRules(CONTRACTOR_RULES),
 };
 export function rulesFor(s: BusinessState): Rule[] {
   const rules = RULESETS[s.rulesVersion];
@@ -215,11 +224,20 @@ export function rulesFor(s: BusinessState): Rule[] {
   return rules;
 }
 export function activeQuestions(s: BusinessState): Rule[] {
-  return rulesFor(s).filter(
-    (r) =>
-      (!r.industries || r.industries.includes(s.profile.industry)) &&
-      (!r.when || s.answers[r.when.id]?.value === r.when.equals),
-  );
+  const rules = rulesFor(s);
+  const matches = (c: { id: string; equals: string }) =>
+    c.id === "equipment_shortfall"
+      ? Number(s.answers.equipment_limit?.value) <
+          Number(s.answers.equipment_value?.value) ===
+        (c.equals === "yes")
+      : s.answers[c.id]?.value === c.equals;
+  const active = (r: Rule): boolean =>
+    (!r.industries || r.industries.includes(s.profile.industry)) &&
+    (!r.when ||
+      (matches(r.when) &&
+        !!rules.find((p) => p.id === r.when!.id && active(p)))) &&
+    (!r.conditions || r.conditions.every(matches));
+  return rules.filter(active);
 }
 export const COVERAGES = {
   cgl: {
@@ -245,6 +263,12 @@ export const COVERAGES = {
       "Design responsibility warrants review of professional exposures.",
     evidence: ["design", "design_details"],
   },
+  property: {
+    label: "Commercial property / business interruption",
+    rationale:
+      "Ownership, tenancy and property values require review of requested building, contents, improvements and interruption coverage.",
+    evidence: ["locations", "property_schedule"],
+  },
   pollution: {
     label: "Pollution liability",
     rationale: "Material handling warrants review of environmental exposures.",
@@ -254,8 +278,30 @@ export const COVERAGES = {
 export function coverageCodes(s: BusinessState): string[] {
   const result = ["cgl"];
   if (Number(s.answers.equipment_value?.value) > 0) result.push("equipment");
-  if (s.answers.vehicles?.value === "yes") result.push("auto");
-  if (s.answers.design?.value === "yes") result.push("professional");
+  if (
+    s.answers.vehicles?.value === "yes" ||
+    s.answers.cover_auto?.value === "yes"
+  )
+    result.push("auto");
+  if (
+    s.rulesVersion === COVERAGE_RULE_VERSION &&
+    (s.answers.cover_property?.value === "yes" ||
+      (() => {
+        try {
+          return scheduleRows(s.answers.locations?.value || "[]").some(
+            (r) => r.tenure === "owned" || r.tenure === "leased",
+          );
+        } catch {
+          return false;
+        }
+      })())
+  )
+    result.push("property");
+  if (
+    s.answers.design?.value === "yes" ||
+    s.answers.cover_professional?.value === "yes"
+  )
+    result.push("professional");
   if (
     s.answers.refrigerants?.value === "yes" &&
     activeQuestions(s).some((q) => q.id === "refrigerants")
@@ -290,9 +336,23 @@ export function completeness(s: BusinessState) {
     );
   for (const d of s.documents)
     if (!d.reviewedBy) documentIssues.push(`Review document: ${d.name}`);
-  const profileIssues: string[] = [];
+  const profileIssues: string[] = intakeIssues(s);
+  for (const q of active)
+    if (q.type === "schedule" && s.answers[q.id]?.value)
+      profileIssues.push(
+        ...scheduleIssues(q.id, s.answers[q.id].value).map(
+          (issue) => `${q.label}: ${issue}`,
+        ),
+      );
   for (const q of active) {
-    const value = s.answers[q.id]?.value;
+    const raw = s.answers[q.id]?.value;
+    const value = raw ? answerQualityText(q.id, raw) : raw;
+    if (
+      s.rulesVersion === COVERAGE_RULE_VERSION &&
+      value &&
+      /\b(?:unknown|outstanding|tbd|to be supplied)\b/i.test(value)
+    )
+      profileIssues.push(`Unresolved information: ${q.label}`);
     if (
       value &&
       /\b(?:pending|not\s+(?:yet\s+)?(?:been\s+)?(?:supplied|provided|confirmed))\b/i.test(
@@ -337,8 +397,10 @@ export function validateAnswer(
 ): void {
   const question = activeQuestions(s).find((q) => q.id === id);
   if (!question) throw new Error("Question is not active for this application");
-  if (value.length > 6000) throw new Error("Answer is too long");
+  if (value.length > (question.type === "schedule" ? 100000 : 6000))
+    throw new Error("Answer is too long");
   if (!value.trim()) return;
+  if (question.type === "schedule") scheduleRows(value);
   if (question.type === "boolean" && !["yes", "no"].includes(value))
     throw new Error("Choose yes or no");
   if (question.type === "select" && !question.options?.includes(value))

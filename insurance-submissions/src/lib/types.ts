@@ -25,7 +25,7 @@ export type Profile = {
 export type DocumentRecord = {
   id: string;
   name: string;
-  kind: "loss_runs" | "other";
+  kind: "loss_runs" | "valuation" | "other";
   path: string;
   size: number;
   mime: string;
@@ -94,10 +94,13 @@ export type Rule = {
   id: string;
   label: string;
   section: string;
-  type: "text" | "number" | "boolean" | "select";
+  type: "text" | "number" | "boolean" | "select" | "schedule";
   options?: string[];
   industries?: Profile["industry"][];
   when?: { id: string; equals: string };
+  scheduleFields?: import("./coverage-intake").ScheduleField[];
+  dependsOn?: string[];
+  conditions?: { id: string; equals: string }[];
   required: boolean;
   min?: number;
   max?: number;

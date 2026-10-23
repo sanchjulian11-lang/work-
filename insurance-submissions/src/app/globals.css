@@ -863,3 +863,15 @@ dd {
 .question {
   scroll-margin-top: 24px;
 }
+.schedule-record {
+  border: 1px solid #dce4dd;
+  border-radius: 8px;
+  padding: 18px;
+  margin: 18px 0;
+}
+fieldset:disabled {
+  opacity: 0.7;
+}
+fieldset {
+  min-width: 0;
+}

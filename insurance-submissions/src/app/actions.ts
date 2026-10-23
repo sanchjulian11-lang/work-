@@ -26,7 +26,7 @@ import {
   verifyAnswer,
 } from "@/lib/domain";
 import { actionDestination } from "@/lib/navigation";
-import { RULE_VERSION } from "@/lib/rules";
+import { COVERAGE_RULE_VERSION } from "@/lib/coverage-intake";
 import { generatePlan } from "@/lib/ai";
 import { inspectUpload, MAX_UPLOAD_BYTES } from "@/lib/documents";
 import type { BusinessState, DocumentRecord, Profile } from "@/lib/types";
@@ -101,8 +101,8 @@ export async function perform(form: FormData) {
         organizationId: actor.organizationId,
         assignedClientIds: [],
         revision: 1,
-        rulesVersion: RULE_VERSION,
-        fictional: isDemo(),
+        rulesVersion: COVERAGE_RULE_VERSION,
+        fictional: isDemo() || field(form, "fictional") === "on",
         profile,
         answers: {},
         documents: [],
@@ -145,6 +145,12 @@ export async function perform(form: FormData) {
         case "profile":
           requireBroker(actor);
           next = changed(s);
+          next.answers = Object.fromEntries(
+            Object.entries(s.answers).map(([id, a]) => {
+              const { verifiedBy, verifiedAt, ...record } = a;
+              return [id, record];
+            }),
+          );
           next.profile = ProfileSchema.parse(
             Object.fromEntries(
               [
@@ -208,14 +214,19 @@ export async function perform(form: FormData) {
           const doc: DocumentRecord = {
             id,
             name: file.name.replace(/[\r\n\x00-\x1f]/g, "").slice(0, 180),
-            kind: field(form, "kind") === "loss_runs" ? "loss_runs" : "other",
+            kind:
+              field(form, "kind") === "loss_runs"
+                ? "loss_runs"
+                : field(form, "kind") === "valuation"
+                  ? "valuation"
+                  : "other",
             path,
             size: bytes.length,
             mime: checked.mime,
             sha256: checked.sha256,
             uploadedBy: actor.id,
             uploadedAt: new Date().toISOString(),
-            fictional: isDemo(),
+            fictional: s.fictional,
           };
           if (isDemo())
             throw new Error(

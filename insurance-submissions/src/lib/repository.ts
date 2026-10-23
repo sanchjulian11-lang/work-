@@ -130,7 +130,31 @@ export async function createBusiness(actor: Actor, state: BusinessState) {
       db.audit.push(event(actor, state, "business_created", {}));
       await persist(db);
     });
-  const { error } = await serviceClient().rpc("create_business", {
+  const client = serviceClient();
+  const definition = rulesFor(state);
+  const { error: publishError } = await client
+    .from("industry_rules")
+    .upsert(
+      {
+        version: state.rulesVersion,
+        industry: "contractors",
+        provenance: "Common broker intake; not an insurer form",
+        rules: definition,
+      },
+      { onConflict: "version", ignoreDuplicates: true },
+    );
+  if (publishError) throw new Error("Unable to publish versioned intake rules");
+  const { data: published, error: readError } = await client
+    .from("industry_rules")
+    .select("rules")
+    .eq("version", state.rulesVersion)
+    .single();
+  if (
+    readError ||
+    canonicalJSON(published?.rules) !== canonicalJSON(definition)
+  )
+    throw new Error("Published rule definition does not match this build");
+  const { error } = await client.rpc("create_business", {
     p_actor_id: actor.id,
     p_state: state,
   });

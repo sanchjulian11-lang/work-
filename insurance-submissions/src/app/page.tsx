@@ -1,3 +1,5 @@
+import { ScheduleInput } from "@/components/schedule-input";
+import { scheduleIssues, COVERAGE_RULE_VERSION } from "@/lib/coverage-intake";
 import Link from "next/link";
 import { configured, currentActor, isDemo } from "@/lib/auth";
 import { listBusinesses, auditFor, clientMembers } from "@/lib/repository";
@@ -83,8 +85,34 @@ function ProfileFields({ profile }: { profile?: Profile }) {
     </div>
   );
 }
-function AnswerInput({ q, value }: { q: Rule; value?: string }) {
+function AnswerInput({
+  q,
+  value,
+  documents,
+}: {
+  q: Rule;
+  value?: string;
+  documents: { id: string; name: string }[];
+}) {
   const id = `answer-${q.id}`;
+  if (q.type === "schedule")
+    return (
+      <ScheduleInput
+        key={value}
+        id={q.id}
+        value={value}
+        documents={documents}
+      />
+    );
+  if (q.type === "select")
+    return (
+      <select id={id} name="value" defaultValue={value ?? ""}>
+        <option value="">Not provided</option>
+        {q.options?.map((o) => (
+          <option key={o}>{o}</option>
+        ))}
+      </select>
+    );
   if (q.type === "boolean")
     return (
       <select id={id} name="value" defaultValue={value ?? ""}>
@@ -494,6 +522,9 @@ export default async function Page({
               {tab === "Questionnaire" && (
                 <>
                   <div className="notice">
+                    {s.rulesVersion === COVERAGE_RULE_VERSION
+                      ? "Coverage-led common intake: the broker selects requested coverages. Only their detailed modules open. "
+                      : "Legacy contractor intake. Create a new application to use coverage-led intake; this record retains its original rules. "}
                     Answer only what is known. Leave missing information blank.
                     A broker must verify recorded statements before final
                     approval.
@@ -543,6 +574,17 @@ export default async function Page({
                                       : "Not provided"}
                                 </span>
                               </div>
+                              {q.type === "schedule" &&
+                                a?.value &&
+                                scheduleIssues(q.id, a.value).length > 0 && (
+                                  <ul className="issue-list">
+                                    {scheduleIssues(q.id, a.value)
+                                      .slice(0, 8)
+                                      .map((issue, i) => (
+                                        <li key={i}>{issue}</li>
+                                      ))}
+                                  </ul>
+                                )}
                               {q.when && (
                                 <p className="conditional">
                                   Follow-up · {q.when.id.replaceAll("_", " ")} ={" "}
@@ -556,17 +598,32 @@ export default async function Page({
                                   name="questionId"
                                   value={q.id}
                                 />
-                                <AnswerInput q={q} value={a?.value} />
-                                <div className="answer-actions">
-                                  <button className="secondary small-button">
-                                    Save answer
-                                  </button>
-                                  <span className="fine">
-                                    {a
-                                      ? `${a.source === "client_statement" ? "Client statement" : "Broker recorded"} · ${new Date(a.recordedAt).toLocaleDateString("en-CA", { timeZone: "UTC" })}`
-                                      : "No recorded statement"}
-                                  </span>
-                                </div>
+                                <fieldset
+                                  disabled={
+                                    !broker && q.provenance.owner === "broker"
+                                  }
+                                >
+                                  {q.provenance.owner === "broker" && (
+                                    <p className="fine">
+                                      Broker decision / review required
+                                    </p>
+                                  )}
+                                  <AnswerInput
+                                    q={q}
+                                    value={a?.value}
+                                    documents={s.documents}
+                                  />
+                                  <div className="answer-actions">
+                                    <button className="secondary small-button">
+                                      Save answer
+                                    </button>
+                                    <span className="fine">
+                                      {a
+                                        ? `${a.source === "client_statement" ? "Client statement" : "Broker recorded"} · ${new Date(a.recordedAt).toLocaleDateString("en-CA", { timeZone: "UTC" })}`
+                                        : "No recorded statement"}
+                                    </span>
+                                  </div>
+                                </fieldset>
                               </form>
                               {broker && a?.value && !isVerified(s, q.id) && (
                                 <form action={perform}>
@@ -621,6 +678,9 @@ export default async function Page({
                       <label>
                         Document category
                         <select name="kind">
+                          <option value="valuation">
+                            External property valuation
+                          </option>
                           <option value="other">Supporting document</option>
                           <option value="loss_runs">
                             Loss record / loss runs
@@ -705,8 +765,8 @@ export default async function Page({
                     <section className="panel">
                       <h2>Completeness check</h2>
                       <p className="muted">
-                        A universal intake check, not a guarantee of insurer
-                        acceptance.
+                        Common intake completeness; insurer acceptance and
+                        insurer-specific requirements are separate.
                       </p>
                       <div className="check-row">
                         <span>Required answers</span>
@@ -853,9 +913,6 @@ export default async function Page({
                         >
                           <button>Download submission PDF</button>
                         </form>
-                        <form action={`/api/submission/${s.id}`} method="post">
-                          <button>Generate final submission (.md)</button>
-                        </form>
                       </>
                     )}
                     <p className="fine">
@@ -908,7 +965,16 @@ export default async function Page({
               <summary>Create another business profile</summary>
               <form action={perform}>
                 <input type="hidden" name="action" value="create" />
+                <p>
+                  New applications use coverage-led common intake for CGL,
+                  property, auto, equipment and E&amp;O. Insurer-specific
+                  requirements require a separate broker check.
+                </p>
                 <ProfileFields />
+                <label className="checkbox">
+                  <input type="checkbox" name="fictional" />
+                  Fictional test application — never for real placement
+                </label>
                 <button>Create application</button>
               </form>
             </details>
@@ -918,8 +984,8 @@ export default async function Page({
             <span>·</span> Broker-led placement
             <br />
             <small>
-              {RULE_VERSION} · Internal starter specification; broker validation
-              required before live use.
+              {s?.rulesVersion ?? COVERAGE_RULE_VERSION} · Common broker intake
+              specification; broker validation required before live use.
             </small>
           </footer>
         </main>
