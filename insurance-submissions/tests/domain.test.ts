@@ -125,6 +125,37 @@ describe("contractor questionnaire and provenance", () => {
     );
     expect(completeness(s).documentIssues.length).toBe(1);
   });
+  it.each([
+    "Fictional test scenario: two company-owned service vans used for HVAC service calls within 100 km of London, Ontario. Jamie Chen and Alex Patel are the designated drivers. No deliveries for others or cross-border travel. Vehicle identification and driver licence details have not been supplied.",
+    "Vehicle details have not been provided.",
+    "Driver licence details have not yet been supplied.",
+    "Vehicle identification is not supplied.",
+    "Driver licence details are not yet confirmed.",
+  ])(
+    "blocks approval when a recorded answer explicitly admits missing details: %s",
+    (value) => {
+      let s = complete();
+      s = saveAnswer(client, s, "vehicle_details", value);
+      s = verifyAnswer(broker, s, "vehicle_details");
+      const check = completeness(s);
+      expect(check.missing).toEqual([]);
+      expect(check.unverified).toEqual([]);
+      expect(check.profileIssues).toContain(
+        "Resolve incomplete statement: Vehicle schedule, ownership, use, radius, and driver information",
+      );
+      expect(check.ready).toBe(false);
+      expect(() => approve(broker, draft(s))).toThrow("Resolve");
+    },
+  );
+  it("does not mistake a negative exposure statement for missing information", () => {
+    const s = saveAnswer(
+      client,
+      complete(),
+      "vehicle_details",
+      "Fictional vehicles operate in Ontario only. No deliveries for others or cross-border travel. Vehicle and driver schedules are attached.",
+    );
+    expect(completeness(s).profileIssues).toEqual([]);
+  });
   it("refuses unknown industry-rule versions", () => {
     const s = sampleBusiness();
     s.rulesVersion = "unknown";

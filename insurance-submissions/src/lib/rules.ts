@@ -295,7 +295,9 @@ export function completeness(s: BusinessState) {
     const value = s.answers[q.id]?.value;
     if (
       value &&
-      /\b(pending|not confirmed|not yet supplied|not provided)\b/i.test(value)
+      /\b(?:pending|not\s+(?:yet\s+)?(?:been\s+)?(?:supplied|provided|confirmed))\b/i.test(
+        value,
+      )
     )
       profileIssues.push(`Resolve incomplete statement: ${q.label}`);
   }
