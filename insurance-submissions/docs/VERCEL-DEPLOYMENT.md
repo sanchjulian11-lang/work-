@@ -32,3 +32,16 @@ Application uploads are limited to 4 MiB, with a 4.25 MiB Server Action envelope
 Deploy only fictional data until hosted acceptance checks pass. After deployment, use the generated HTTPS URL to sign in with the broker account. Configure the final HTTPS URL in Supabase Authentication's URL settings before enabling any email-link or redirect-based authentication flows. Password sign-in does not depend on an email callback.
 
 Verify sign-in, broker/client isolation, a small fictional PDF upload and download, verification, approval, and manual export on the actual Vercel host. Vercel credentials and provider access are not supplied by the cloud workspace. An uploaded Git repository is not proof of a successful Vercel deployment.
+
+### Broker-approved PDF export
+
+After approval, **Download submission PDF** produces a paginated submission with
+requested coverage first, verified answers grouped by questionnaire section,
+separate inferred coverage considerations, a supporting-document index, and a
+provenance appendix. All pages of a fictional account carry a test label.
+The PDF uses bundled, licensed DejaVu fonts; no remote rendering service receives
+client data. Supporting documents are listed, not embedded. Brokers must attach
+those files separately and check any insurer-specific application requirements.
+The original Markdown export remains available. Both exports require current
+broker approval and record an export snapshot. Changing answers invalidates
+approval. No email or insurer transmission occurs.

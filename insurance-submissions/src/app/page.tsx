@@ -847,6 +847,12 @@ export default async function Page({
                           Approved by {s.approval.brokerName}. A final export is
                           recorded as an immutable snapshot.
                         </p>
+                        <form
+                          action={`/api/submission/${s.id}?format=pdf`}
+                          method="post"
+                        >
+                          <button>Download submission PDF</button>
+                        </form>
                         <form action={`/api/submission/${s.id}`} method="post">
                           <button>Generate final submission (.md)</button>
                         </form>

@@ -119,9 +119,13 @@ test("complete broker review, approve, export, and revoke approval after a chang
     .click();
   const download = await pending;
   expect(download.suggestedFilename()).toMatch(/submission-.*\.md$/);
+  const pdfPending = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download submission PDF" }).click();
+  const pdfDownload = await pdfPending;
+  expect(pdfDownload.suggestedFilename()).toMatch(/submission-.*\.pdf$/);
   await page.goto("/?tab=Audit%20trail");
   await expect(
-    page.getByRole("cell", { name: "final generated", exact: true }),
+    page.getByRole("cell", { name: "final generated", exact: true }).first(),
   ).toBeVisible();
   await page.goto("/?tab=Questionnaire");
   await page.locator("#answer-payroll").fill("250000");
