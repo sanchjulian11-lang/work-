@@ -107,6 +107,7 @@ function AnswerInput({
       <ScheduleInput
         key={value}
         id={q.id}
+        fields={q.scheduleFields ?? []}
         value={value}
         documents={documents}
       />
@@ -616,9 +617,17 @@ export default async function Page({
                               </div>
                               {q.type === "schedule" &&
                                 a?.value &&
-                                scheduleIssues(q.id, a.value).length > 0 && (
+                                scheduleIssues(
+                                  q.id,
+                                  a.value,
+                                  q.scheduleFields ?? [],
+                                ).length > 0 && (
                                   <ul className="issue-list">
-                                    {scheduleIssues(q.id, a.value)
+                                    {scheduleIssues(
+                                      q.id,
+                                      a.value,
+                                      q.scheduleFields ?? [],
+                                    )
                                       .slice(0, 8)
                                       .map((issue, i) => (
                                         <li key={i}>{issue}</li>

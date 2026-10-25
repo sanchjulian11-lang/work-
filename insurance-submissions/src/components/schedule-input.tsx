@@ -2,12 +2,13 @@
 import type { LocationOption } from "@/lib/location-options";
 import { useState, useEffect } from "react";
 import {
-  SCHEDULES,
+  type ScheduleField,
   scheduleRows,
   scheduleFieldActive,
 } from "@/lib/coverage-intake";
 export function ScheduleInput({
   id,
+  fields,
   value,
   documents,
   onDraftChange,
@@ -15,6 +16,7 @@ export function ScheduleInput({
 }: {
   locations?: LocationOption[];
   id: string;
+  fields: ScheduleField[];
   value?: string;
   documents: { id: string; name: string }[];
   onDraftChange?: (value: string) => void;
@@ -39,7 +41,6 @@ export function ScheduleInput({
     setRows(next);
     onDraftChange?.(JSON.stringify(next));
   };
-  const fields = SCHEDULES[id];
   return (
     <div id={`answer-${id}`}>
       <input type="hidden" name="value" value={JSON.stringify(rows)} />

@@ -202,9 +202,12 @@ export function scheduleFieldActive(
     return false;
   return !f.when || row[f.when.id] === f.when.equals;
 }
-export function scheduleIssues(id: string, value: string): string[] {
-  const fields = SCHEDULES[id];
-  if (!fields) return [];
+export function scheduleIssues(
+  id: string,
+  value: string,
+  fields: ScheduleField[] = SCHEDULES[id],
+): string[] {
+  if (!fields?.length) return [];
   let rows: Record<string, string>[];
   try {
     rows = scheduleRows(value);
@@ -320,7 +323,9 @@ const rule = (
   section,
   type,
   required: true,
-  ...(type === "schedule" ? { scheduleFields: SCHEDULES[id] } : {}),
+  ...(type === "schedule"
+    ? { scheduleFields: structuredClone(SCHEDULES[id]) }
+    : {}),
   provenance: {
     source:
       "Internal Ontario contractor intake baseline; broker validation required, not an insurer form",
@@ -692,14 +697,15 @@ export function displayAnswer(
   value: string,
   documents: { id: string; name: string }[] = [],
   locations: { id: string; label: string }[] = [],
+  fields: ScheduleField[] = SCHEDULES[id],
 ): string {
-  if (!SCHEDULES[id]) return value;
+  if (!fields?.length) return value;
   try {
     return scheduleRows(value)
       .map(
         (row, i) =>
           `Record ${i + 1}\n` +
-          SCHEDULES[id]
+          fields
             .filter(
               (f) =>
                 scheduleFieldActive(id, f, row) &&
@@ -718,12 +724,16 @@ export function displayAnswer(
   }
 }
 
-export function answerQualityText(id: string, value: string): string {
-  if (!SCHEDULES[id]) return value;
+export function answerQualityText(
+  id: string,
+  value: string,
+  fields: ScheduleField[] = SCHEDULES[id],
+): string {
+  if (!fields?.length) return value;
   try {
     return scheduleRows(value)
       .flatMap((row) =>
-        SCHEDULES[id]
+        fields
           .filter((f) => scheduleFieldActive(id, f, row))
           .map((f) => row[f.id] || ""),
       )

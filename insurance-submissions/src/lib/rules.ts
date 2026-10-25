@@ -345,13 +345,17 @@ export function completeness(s: BusinessState) {
   for (const q of active)
     if (q.type === "schedule" && s.answers[q.id]?.value)
       profileIssues.push(
-        ...scheduleIssues(q.id, s.answers[q.id].value).map(
-          (issue) => `${q.label}: ${issue}`,
-        ),
+        ...scheduleIssues(
+          q.id,
+          s.answers[q.id].value,
+          q.scheduleFields ?? [],
+        ).map((issue) => `${q.label}: ${issue}`),
       );
   for (const q of active) {
     const raw = s.answers[q.id]?.value;
-    const value = raw ? answerQualityText(q.id, raw) : raw;
+    const value = raw
+      ? answerQualityText(q.id, raw, q.scheduleFields ?? [])
+      : raw;
     if (
       coverageLed(s.rulesVersion) &&
       value &&

@@ -446,3 +446,50 @@ it("creates an explicit updated copy without carrying approval, verification, at
   expect(JSON.stringify(s)).toBe(before);
   expect(() => updatedIntakeCopy(client, s)).toThrow("Broker role");
 });
+
+describe("published schedule definitions", () => {
+  it("keeps existing field validation and exports isolated from future schedule changes", () => {
+    const state = fresh();
+    const pinned = rulesFor(state).find(
+      (q) => q.id === "locations",
+    )!.scheduleFields!;
+    const original = structuredClone(SCHEDULES.locations);
+    const value = JSON.stringify([
+      {
+        reference: "LOC-1",
+        address: "123 Test Street",
+        tenure: "leased",
+        occupancy: "Office",
+        responsibilities: "Tenant contents",
+      },
+    ]);
+    const beforeIssues = scheduleIssues("locations", value, pinned);
+    const beforeDisplay = displayAnswer("locations", value, [], [], pinned);
+    try {
+      SCHEDULES.locations[1].label = "Future changed label";
+      SCHEDULES.locations.push({
+        id: "futureField",
+        label: "Future requirement",
+        required: true,
+      });
+      expect(pinned).toEqual(original);
+      expect(scheduleIssues("locations", value, pinned)).toEqual(beforeIssues);
+      expect(displayAnswer("locations", value, [], [], pinned)).toEqual(
+        beforeDisplay,
+      );
+      expect(scheduleIssues("locations", value)).toContain(
+        "Record 1: Future requirement is required.",
+      );
+    } finally {
+      SCHEDULES.locations.splice(0, SCHEDULES.locations.length, ...original);
+    }
+  });
+  it("does not parse ordinary narrative answers as schedules", () => {
+    expect(
+      scheduleIssues("operations", "Installation and repairs", []),
+    ).toEqual([]);
+    expect(
+      displayAnswer("operations", "Installation and repairs", [], [], []),
+    ).toBe("Installation and repairs");
+  });
+});

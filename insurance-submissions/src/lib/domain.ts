@@ -111,7 +111,11 @@ export function verifyAnswer(
   if (!answer?.value.trim() || !activeQuestions(s).some((q) => q.id === id))
     throw new Error("An active recorded answer is required");
   validateAnswer(s, id, answer.value);
-  const problems = scheduleIssues(id, answer.value);
+  const problems = scheduleIssues(
+    id,
+    answer.value,
+    rulesFor(s).find((q) => q.id === id)?.scheduleFields ?? [],
+  );
   if (problems.length) throw new Error(problems.slice(0, 3).join(" "));
   const next = changed(s);
   next.answers = {
@@ -242,7 +246,7 @@ export function renderSubmission(s: BusinessState, final = false): string {
   for (const q of facts) {
     const a = s.answers[q.id];
     lines.push(
-      `- ${q.label}: ${mdText(displayAnswer(q.id, a.value, s.documents, locationOptions(s.answers.locations?.value)))}`,
+      `- ${q.label}: ${mdText(displayAnswer(q.id, a.value, s.documents, locationOptions(s.answers.locations?.value), q.scheduleFields ?? []))}`,
       `  Source: ${a.source}; recorded ${a.recordedAt}; verified ${a.verifiedAt}; question ${q.provenance.reference} @ ${a.questionVersion}`,
     );
   }

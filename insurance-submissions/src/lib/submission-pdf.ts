@@ -125,6 +125,7 @@ export async function submissionPDF(s: BusinessState, snapshot: Snapshot) {
         s.answers[q.id].value,
         s.documents,
         locationOptions(s.answers.locations?.value),
+        q.scheduleFields ?? [],
       ),
     );
     y -= 7;

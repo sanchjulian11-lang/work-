@@ -72,6 +72,7 @@ export function QuestionControls({
           ) : q.type === "schedule" ? (
             <ScheduleInput
               id={q.id}
+              fields={q.scheduleFields ?? []}
               value={value}
               documents={documents}
               locations={locations}
