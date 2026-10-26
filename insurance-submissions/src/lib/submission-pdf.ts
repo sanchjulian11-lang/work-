@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PDFDocument, rgb } from "pdf-lib";
 import { activeQuestions, COVERAGES, isVerified } from "./rules";
+import { submissionOverview } from "./submission-overview";
 import type { BusinessState, Snapshot } from "./types";
 
 // Deterministic presentation only: no model rewriting or inferred client facts.
@@ -97,6 +98,8 @@ export async function submissionPDF(s: BusinessState, snapshot: Snapshot) {
   text(
     "All amounts are CAD. Recorded statements below were reviewed by the broker; verification is not independent proof.",
   );
+  heading("Quote request at a glance");
+  for (const line of submissionOverview(s)) text(line);
   if (coverageLed(s.rulesVersion)) {
     heading("Submission scope");
     text(s.answers.market_status?.value || "Not assessed");

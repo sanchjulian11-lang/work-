@@ -375,8 +375,14 @@ export function completeness(s: BusinessState) {
     )
       profileIssues.push(`Resolve incomplete statement: ${q.label}`);
   }
-  const split = s.answers.revenue_split?.value;
-  if (split) {
+  for (const id of [
+    "revenue_split",
+    "service_revenue_split",
+    "retail_revenue_split",
+  ]) {
+    if (!active.some((q) => q.id === id)) continue;
+    const split = s.answers[id]?.value;
+    if (!split) continue;
     const percentages = [...split.matchAll(/(\d+(?:\.\d+)?)\s*%/g)].map((m) =>
       Number(m[1]),
     );
@@ -384,7 +390,9 @@ export function completeness(s: BusinessState) {
       !percentages.length ||
       Math.abs(percentages.reduce((a, b) => a + b, 0) - 100) > 0.01
     )
-      profileIssues.push("Revenue breakdown percentages must total 100%.");
+      profileIssues.push(
+        `${active.find((q) => q.id === id)!.label}: percentages must total 100%.`,
+      );
   }
 
   if (!s.profile.legalName.trim()) profileIssues.push("Legal name is missing.");
