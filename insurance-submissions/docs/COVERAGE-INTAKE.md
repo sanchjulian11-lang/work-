@@ -129,3 +129,13 @@ insurance products. Existing v1/v2/v3 applications retain their original rule
 versions and can be copied to v4 without carrying approval, verification,
 attachments or client assignments. The copy is a new application, not a rewrite
 of the prior approved record.
+
+## Submission cover overview
+
+The approved PDF begins with a quote overview: business type, requested date
+and coverage, market scope, document count and active, broker-verified operations,
+CGL/E&O terms, insurance history and claims answer. It uses recorded fields
+without AI rewriting. Detailed schedules, source attribution and the approval
+appendix remain in the PDF. Unverified or inactive answers are excluded. New
+professional-services and retail revenue breakdowns must total 100% before
+approval. This common-intake overview is not a completed carrier application.
