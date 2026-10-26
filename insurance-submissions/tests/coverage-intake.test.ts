@@ -430,11 +430,12 @@ it("retains exact published v1 and v2 definitions while v3 gates vehicle use by 
 });
 it("creates an explicit updated copy without carrying approval, verification, attachments or client access", async () => {
   const { updatedIntakeCopy } = await import("../src/lib/domain");
-  const { LATEST_RULE_VERSION } = await import("../src/lib/coverage-intake");
+  const { COMMERCIAL_RULE_VERSION } =
+    await import("../src/lib/coverage-intake");
   const s = cglComplete();
   const before = JSON.stringify(s);
   const copy = updatedIntakeCopy(broker, s);
-  expect(copy.rulesVersion).toBe(LATEST_RULE_VERSION);
+  expect(copy.rulesVersion).toBe(COMMERCIAL_RULE_VERSION);
   expect(copy.id).not.toBe(s.id);
   expect(copy.answers.cover_cgl.value).toBe("yes");
   expect(copy.answers.cover_cgl.source).toBe(s.answers.cover_cgl.source);

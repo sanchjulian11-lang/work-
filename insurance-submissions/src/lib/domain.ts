@@ -1,5 +1,5 @@
 import {
-  LATEST_RULE_VERSION,
+  COMMERCIAL_RULE_VERSION,
   displayAnswer,
   scheduleIssues,
 } from "./coverage-intake";
@@ -290,14 +290,14 @@ export function updatedIntakeCopy(
 ): BusinessState {
   assertAccess(actor, s);
   requireBroker(actor);
-  if (s.rulesVersion === LATEST_RULE_VERSION)
+  if (s.rulesVersion === COMMERCIAL_RULE_VERSION)
     throw new Error("This application already uses the current rules.");
   return {
     id: randomUUID(),
     organizationId: s.organizationId,
     assignedClientIds: [],
     revision: 1,
-    rulesVersion: LATEST_RULE_VERSION,
+    rulesVersion: COMMERCIAL_RULE_VERSION,
     fictional: s.fictional,
     profile: { ...s.profile },
     answers: Object.fromEntries(

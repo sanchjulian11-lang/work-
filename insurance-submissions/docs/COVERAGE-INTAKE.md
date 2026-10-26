@@ -56,8 +56,8 @@ in the PDF and audit copy.
 ## Versioning and deployment
 
 Existing applications retain `ontario-contractors-2026.10.22-v1` and their original
-approvals. They are never silently reinterpreted. Version 2 (`ontario-contractors-2026.10.23-v2`) is preserved unchanged. New applications use
-`ontario-contractors-2026.10.23-v3`, where vehicle-use questions appear only when auto is selected. On creation, the server publishes that exact
+approvals. They are never silently reinterpreted. Version 2 (`ontario-contractors-2026.10.23-v2`) is preserved unchanged. Version 3 uses
+`ontario-contractors-2026.10.23-v3`, where vehicle-use questions appear only when auto is selected. New applications use v4 as described below. On creation, the server publishes that exact
 immutable rule definition (including schedule fields, conditions and dependencies)
 and checks for an exact match before creating the application. No schema change
 or destructive migration is required. Rule versions must not be edited after
@@ -110,3 +110,22 @@ remains visibly unavailable until the user chooses a valid saved address. The
 PDF presents the linked address and tenure instead of asking readers to interpret
 internal reference codes. This presentation change preserves published question
 definitions and existing links; it does not require a new intake copy.
+
+## Ontario commercial class draft (v4)
+
+New applications use `ontario-commercial-2026.10.25-v4`. The broker can choose
+professional services, retail or rental-property owner as well as the existing
+contractor trades. Each new class opens activity questions relevant to its work.
+Retail importing/relabeling and short-term rentals open follow-ups only when
+answered Yes. Trade-specific questions are restricted to contractor profiles.
+Coverage selections and schedules continue to branch independently of class.
+
+This is an **internal class intake draft**, not insurer-validated requirements.
+The uploaded appetite workbook lists markets and historical notes, some dating to
+2016; those notes are not automatic eligibility or completeness rules. The form
+must be checked against current applications and reviewed by a licensed broker
+before a market-specific readiness claim. New classes are not complete specialty
+insurance products. Existing v1/v2/v3 applications retain their original rule
+versions and can be copied to v4 without carrying approval, verification,
+attachments or client assignments. The copy is a new application, not a rewrite
+of the prior approved record.

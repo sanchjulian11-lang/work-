@@ -19,7 +19,14 @@ export type Profile = {
   operatingName: string;
   city: string;
   province: "ON";
-  industry: "hvac" | "electrical" | "plumbing" | "general";
+  industry:
+    | "hvac"
+    | "electrical"
+    | "plumbing"
+    | "general"
+    | "professional_services"
+    | "retail"
+    | "rental_property";
   description: string;
 };
 export type DocumentRecord = {

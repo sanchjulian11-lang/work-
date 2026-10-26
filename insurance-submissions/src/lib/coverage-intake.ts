@@ -1,8 +1,13 @@
 import type { BusinessState, Rule } from "./types";
 export const COVERAGE_RULE_VERSION = "ontario-contractors-2026.10.23-v2";
 export const LATEST_RULE_VERSION = "ontario-contractors-2026.10.23-v3";
+export const COMMERCIAL_RULE_VERSION = "ontario-commercial-2026.10.25-v4";
 export const coverageLed = (version: string) =>
-  [COVERAGE_RULE_VERSION, LATEST_RULE_VERSION].includes(version);
+  [
+    COVERAGE_RULE_VERSION,
+    LATEST_RULE_VERSION,
+    COMMERCIAL_RULE_VERSION,
+  ].includes(version);
 export type ScheduleField = {
   id: string;
   label: string;
@@ -538,7 +543,7 @@ export function coverageRules(
   const coverageParents = selectors.map((q) => q.id);
   return definitions.map((q) => ({
     ...q,
-    ...(version === LATEST_RULE_VERSION
+    ...([LATEST_RULE_VERSION, COMMERCIAL_RULE_VERSION].includes(version)
       ? {
           provenance: { ...q.provenance, version },
           ...(q.id === "vehicles"

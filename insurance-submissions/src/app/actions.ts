@@ -27,7 +27,7 @@ import {
   updatedIntakeCopy,
 } from "@/lib/domain";
 import { actionDestination } from "@/lib/navigation";
-import { LATEST_RULE_VERSION } from "@/lib/coverage-intake";
+import { COMMERCIAL_RULE_VERSION } from "@/lib/coverage-intake";
 import { generatePlan } from "@/lib/ai";
 import { inspectUpload, MAX_UPLOAD_BYTES } from "@/lib/documents";
 import type { BusinessState, DocumentRecord, Profile } from "@/lib/types";
@@ -36,7 +36,15 @@ const ProfileSchema = z.object({
   operatingName: z.string().trim().max(180),
   city: z.string().trim().min(2).max(120),
   province: z.literal("ON"),
-  industry: z.enum(["hvac", "electrical", "plumbing", "general"]),
+  industry: z.enum([
+    "hvac",
+    "electrical",
+    "plumbing",
+    "general",
+    "professional_services",
+    "retail",
+    "rental_property",
+  ]),
   description: z.string().trim().max(3000),
 });
 const field = (form: FormData, key: string) => String(form.get(key) ?? "");
@@ -102,7 +110,7 @@ export async function perform(form: FormData) {
         organizationId: actor.organizationId,
         assignedClientIds: [],
         revision: 1,
-        rulesVersion: LATEST_RULE_VERSION,
+        rulesVersion: COMMERCIAL_RULE_VERSION,
         fictional: isDemo() || field(form, "fictional") === "on",
         profile,
         answers: {},
@@ -172,6 +180,15 @@ export async function perform(form: FormData) {
               ].map((k) => [k, field(form, k)]),
             ),
           );
+          if (
+            s.rulesVersion !== COMMERCIAL_RULE_VERSION &&
+            !["hvac", "electrical", "plumbing", "general"].includes(
+              next.profile.industry,
+            )
+          )
+            throw new Error(
+              "Start an updated intake before selecting a new business class.",
+            );
           break;
         case "draft": {
           requireBroker(actor);

@@ -132,17 +132,17 @@ export async function createBusiness(actor: Actor, state: BusinessState) {
     });
   const client = serviceClient();
   const definition = rulesFor(state);
-  const { error: publishError } = await client
-    .from("industry_rules")
-    .upsert(
-      {
-        version: state.rulesVersion,
-        industry: "contractors",
-        provenance: "Common broker intake; not an insurer form",
-        rules: definition,
-      },
-      { onConflict: "version", ignoreDuplicates: true },
-    );
+  const { error: publishError } = await client.from("industry_rules").upsert(
+    {
+      version: state.rulesVersion,
+      industry: state.rulesVersion.startsWith("ontario-commercial-")
+        ? "commercial"
+        : "contractors",
+      provenance: "Common broker intake; not an insurer form",
+      rules: definition,
+    },
+    { onConflict: "version", ignoreDuplicates: true },
+  );
   if (publishError) throw new Error("Unable to publish versioned intake rules");
   const { data: published, error: readError } = await client
     .from("industry_rules")

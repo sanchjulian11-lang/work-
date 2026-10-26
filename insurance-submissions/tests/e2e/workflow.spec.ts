@@ -519,3 +519,42 @@ test("updated intake autosaves in order, retains drafts, and recovers from netwo
   await expect(page.locator("#answer-operations")).toHaveValue(draft);
   await other.close();
 });
+
+test("retail intake opens product follow-ups without contractor questions and persists its class", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByText("Create another business profile", { exact: true })
+    .click();
+  const create = page
+    .locator("form")
+    .filter({
+      has: page.getByRole("button", {
+        name: "Create application",
+        exact: true,
+      }),
+    });
+  await create
+    .getByLabel("Legal name", { exact: true })
+    .fill("Fictional Retail Test Ltd.");
+  await create.getByLabel("Operating name", { exact: true }).fill("Test Store");
+  await create.getByLabel("City", { exact: true }).fill("London");
+  await create.locator("select[name=industry]").selectOption("retail");
+  await create
+    .getByRole("button", { name: "Create application", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText("Saved");
+  await page.getByRole("link", { name: "Questionnaire", exact: true }).click();
+  await expect(page.locator("#question-retail_product_mix")).toBeVisible();
+  await expect(page.locator("#question-hot_work")).toHaveCount(0);
+  await expect(page.locator("#question-retail_import_details")).toHaveCount(0);
+  await page.locator("#question-retail_imports select").selectOption("yes");
+  await expect(
+    page.locator("#question-retail_imports").getByRole("status"),
+  ).toHaveText("Saved");
+  await expect(page.locator("#question-retail_import_details")).toBeVisible();
+  await page.reload();
+  await expect(page.locator("#question-retail_import_details")).toBeVisible();
+  await expect(page.locator("#question-hot_work")).toHaveCount(0);
+});

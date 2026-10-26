@@ -4,7 +4,7 @@ import { QuestionControls } from "@/components/question-controls";
 import { ScheduleInput } from "@/components/schedule-input";
 import {
   scheduleIssues,
-  LATEST_RULE_VERSION,
+  COMMERCIAL_RULE_VERSION,
   coverageLed,
 } from "@/lib/coverage-intake";
 import Link from "next/link";
@@ -39,7 +39,13 @@ function Hidden({ s, action }: { s: BusinessState; action: string }) {
     </>
   );
 }
-function ProfileFields({ profile }: { profile?: Profile }) {
+function ProfileFields({
+  profile,
+  expanded = true,
+}: {
+  profile?: Profile;
+  expanded?: boolean;
+}) {
   return (
     <div className="form-grid">
       <label>
@@ -73,12 +79,19 @@ function ProfileFields({ profile }: { profile?: Profile }) {
         <input name="province" value="ON" readOnly />
       </label>
       <label>
-        Trade
+        Business type
         <select name="industry" defaultValue={profile?.industry ?? "hvac"}>
           <option value="hvac">HVAC</option>
           <option value="electrical">Electrical</option>
           <option value="plumbing">Plumbing</option>
           <option value="general">General contractor</option>
+          {expanded && (
+            <option value="professional_services">Professional services</option>
+          )}
+          {expanded && <option value="retail">Retail</option>}
+          {expanded && (
+            <option value="rental_property">Rental property owner</option>
+          )}
         </select>
       </label>
       <label className="span-2">
@@ -482,7 +495,10 @@ export default async function Page({
                   {broker ? (
                     <form action={perform}>
                       <Hidden s={s} action="profile" />
-                      <ProfileFields profile={s.profile} />
+                      <ProfileFields
+                        profile={s.profile}
+                        expanded={s.rulesVersion === COMMERCIAL_RULE_VERSION}
+                      />
                       <p className="fine">
                         Saving changes invalidates any draft and broker
                         approval. Previously recorded answers remain available;
@@ -545,7 +561,7 @@ export default async function Page({
                       retained.
                     </p>
                   )}
-                  {broker && s.rulesVersion !== LATEST_RULE_VERSION && (
+                  {broker && s.rulesVersion !== COMMERCIAL_RULE_VERSION && (
                     <section className="panel">
                       <h2>Updated questionnaire available</h2>
                       <p>
@@ -1054,8 +1070,8 @@ export default async function Page({
             <span>·</span> Broker-led placement
             <br />
             <small>
-              {s?.rulesVersion ?? LATEST_RULE_VERSION} · Common broker intake
-              specification; broker validation required before live use.
+              {s?.rulesVersion ?? COMMERCIAL_RULE_VERSION} · Common broker
+              intake specification; broker validation required before live use.
             </small>
           </footer>
         </main>
