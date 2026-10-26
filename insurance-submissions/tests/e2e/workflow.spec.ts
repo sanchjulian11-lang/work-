@@ -299,6 +299,72 @@ test("new coverage-led application branches and saves structured locations", asy
       .getByLabel("Business location, record 1", { exact: true })
       .locator("option:checked"),
   ).toHaveText("123 Fictional Street, London ON N6A 1A1 — Leased");
+  // Tenant contents coverage: partial saves persist, but cannot be verified.
+  const requested = property.getByLabel(
+    "Property coverage requested at this location?, record 1",
+    { exact: true },
+  );
+  const building = property.getByLabel(
+    "Building coverage requested?, record 1",
+    { exact: true },
+  );
+  await requested.selectOption("yes");
+  await building.selectOption("no");
+  await property
+    .getByLabel("Building valuation status, record 1", { exact: true })
+    .selectOption("not applicable");
+  await expect(
+    property.getByLabel("Building replacement value (CAD), record 1", {
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect(
+    property.getByLabel("Wall, roof, and floor construction, record 1", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await property
+    .getByRole("button", { name: "Save answer", exact: true })
+    .click();
+  await expect(property.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(requested).toHaveValue("yes");
+  await expect(building).toHaveValue("no");
+  await expect(
+    property.getByLabel("Building valuation status, record 1", { exact: true }),
+  ).toHaveValue("not applicable");
+  await expect(
+    property
+      .getByLabel("Business location, record 1", { exact: true })
+      .locator("option:checked"),
+  ).toHaveText("123 Fictional Street, London ON N6A 1A1 — Leased");
+  await property
+    .getByRole("button", { name: "Verify recorded statement", exact: true })
+    .click();
+  await expect(property.getByRole("alert")).toContainText(
+    "construction is required",
+  );
+  await expect(
+    property.getByText("Broker verified", { exact: true }),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(
+    property.getByText("Broker verified", { exact: true }),
+  ).toHaveCount(0);
+  // Removing a location must not silently relink property to another address.
+  await loc
+    .getByRole("button", { name: "Remove record 1", exact: true })
+    .click();
+  await loc.getByRole("button", { name: "Save answer", exact: true }).click();
+  await expect(loc.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(
+    property
+      .getByLabel("Business location, record 1", { exact: true })
+      .locator("option:checked"),
+  ).toHaveText(
+    "Previously linked location unavailable — choose a saved address",
+  );
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(

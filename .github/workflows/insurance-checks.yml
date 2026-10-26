@@ -1,0 +1,48 @@
+name: Insurance application checks
+on:
+  push:
+    paths:
+      - 'insurance-submissions/**'
+      - '.github/workflows/insurance-checks.yml'
+  pull_request:
+    paths:
+      - 'insurance-submissions/**'
+      - '.github/workflows/insurance-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: insurance-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: insurance-submissions
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      DEMO_MODE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: insurance-submissions/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Browser acceptance tests with fictional records
+        run: |
+          export CHROMIUM_PATH="$(node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log(chromium.executablePath())')"
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fictional-browser-test-failures
+          path: insurance-submissions/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
