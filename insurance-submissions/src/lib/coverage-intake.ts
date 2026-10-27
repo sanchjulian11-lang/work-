@@ -2,11 +2,13 @@ import type { BusinessState, Rule } from "./types";
 export const COVERAGE_RULE_VERSION = "ontario-contractors-2026.10.23-v2";
 export const LATEST_RULE_VERSION = "ontario-contractors-2026.10.23-v3";
 export const COMMERCIAL_RULE_VERSION = "ontario-commercial-2026.10.25-v4";
+export const PREMARKET_RULE_VERSION = "ontario-commercial-2026.10.26-v5";
 export const coverageLed = (version: string) =>
   [
     COVERAGE_RULE_VERSION,
     LATEST_RULE_VERSION,
     COMMERCIAL_RULE_VERSION,
+    PREMARKET_RULE_VERSION,
   ].includes(version);
 export type ScheduleField = {
   id: string;
@@ -578,7 +580,10 @@ export function intakeIssues(s: BusinessState): string[] {
     )
   )
     out.push("Select at least one requested coverage.");
-  if (s.answers.market_attestation?.value !== "yes")
+  if (s.rulesVersion === PREMARKET_RULE_VERSION) {
+    if (s.answers.intake_attestation?.value !== "yes")
+      out.push("Broker intake review must be confirmed.");
+  } else if (s.answers.market_attestation?.value !== "yes")
     out.push("Broker market / common-intake review must be confirmed.");
   const date = s.answers.effective_date?.value;
   if (
@@ -657,6 +662,7 @@ export function intakeIssues(s: BusinessState): string[] {
     }
   }
   if (
+    s.rulesVersion !== PREMARKET_RULE_VERSION &&
     s.answers.market_status?.value === "selected market requirements reviewed"
   ) {
     for (const req of rows("market_requirements")) {

@@ -1,5 +1,5 @@
 import {
-  COMMERCIAL_RULE_VERSION,
+  PREMARKET_RULE_VERSION,
   displayAnswer,
   scheduleIssues,
 } from "./coverage-intake";
@@ -237,9 +237,14 @@ export function renderSubmission(s: BusinessState, final = false): string {
     `Rules: ${s.rulesVersion} · Revision: ${s.revision}`,
     s.fictional ? "FICTIONAL ACCOUNT — NOT FOR REAL PLACEMENT" : "",
     "",
-    ...(s.answers.market_status
-      ? [`Submission scope: ${mdText(s.answers.market_status.value)}`, ""]
-      : []),
+    ...(s.rulesVersion === PREMARKET_RULE_VERSION
+      ? [
+          "Submission scope: Broker-reviewed common intake; insurer-specific requirements not assessed",
+          "",
+        ]
+      : s.answers.market_status
+        ? [`Submission scope: ${mdText(s.answers.market_status.value)}`, ""]
+        : []),
     "## Recorded statements verified by broker",
     "Verification means broker-reviewed recorded statements, not independent proof.",
   ];
@@ -290,21 +295,31 @@ export function updatedIntakeCopy(
 ): BusinessState {
   assertAccess(actor, s);
   requireBroker(actor);
-  if (s.rulesVersion === COMMERCIAL_RULE_VERSION)
+  if (s.rulesVersion === PREMARKET_RULE_VERSION)
     throw new Error("This application already uses the current rules.");
   return {
     id: randomUUID(),
     organizationId: s.organizationId,
     assignedClientIds: [],
     revision: 1,
-    rulesVersion: COMMERCIAL_RULE_VERSION,
+    rulesVersion: PREMARKET_RULE_VERSION,
     fictional: s.fictional,
     profile: { ...s.profile },
     answers: Object.fromEntries(
-      Object.entries(s.answers).map(([id, a]) => {
-        const { verifiedBy, verifiedAt, ...record } = a;
-        return [id, record];
-      }),
+      Object.entries(s.answers)
+        .filter(
+          ([id]) =>
+            ![
+              "market_review",
+              "market_status",
+              "market_requirements",
+              "market_attestation",
+            ].includes(id),
+        )
+        .map(([id, a]) => {
+          const { verifiedBy, verifiedAt, ...record } = a;
+          return [id, record];
+        }),
     ),
     documents: [],
     copiedFrom: {

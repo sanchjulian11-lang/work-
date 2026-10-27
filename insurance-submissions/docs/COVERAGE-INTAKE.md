@@ -43,7 +43,11 @@ baseline was written. A broker must validate the questions before real use.
 
 ## Insurer-specific requirements
 
-No source-verified insurer library ships in this release. The broker explicitly
+No source-verified insurer library ships in this release. Version 5 ends at
+broker-reviewed common intake, before choosing a target insurer. The export
+states that insurer-specific requirements were not assessed. A broker must
+check any selected insurer's current requirements before sending the package.
+Older versions retain their original market review: the broker explicitly
 chooses **common intake only — insurer requirements not assessed**, or records
 that a selected market's requirements were reviewed. The latter opens a
 requirement register with coverage, requirement, source document/URL, edition,
@@ -57,7 +61,7 @@ in the PDF and audit copy.
 
 Existing applications retain `ontario-contractors-2026.10.22-v1` and their original
 approvals. They are never silently reinterpreted. Version 2 (`ontario-contractors-2026.10.23-v2`) is preserved unchanged. Version 3 uses
-`ontario-contractors-2026.10.23-v3`, where vehicle-use questions appear only when auto is selected. New applications use v4 as described below. On creation, the server publishes that exact
+`ontario-contractors-2026.10.23-v3`, where vehicle-use questions appear only when auto is selected. New applications use v5 as described below. On creation, the server publishes that exact
 immutable rule definition (including schedule fields, conditions and dependencies)
 and checks for an exact match before creating the application. No schema change
 or destructive migration is required. Rule versions must not be edited after
@@ -98,7 +102,7 @@ Coverage-led Yes/No answers save automatically through a serialized, authenticat
 
 A failed or stale save shows an error. Unconfirmed saves pause the queue until Review latest version. Drafts remain available for explicit Retry save, which is never an automatic overwrite of a newer revision.
 
-From an older application, Start updated intake from saved answers creates a new version-3 application with the same recorded values and source metadata, an explicit copiedFrom reference, and no carried verification or approval. The original application is unchanged. Supporting documents and client assignments must be added to the new application separately. No existing rule definition is updated in place.
+From an older application, Start updated intake from saved answers creates a new version-5 application with the same recorded values and source metadata, an explicit copiedFrom reference, and no carried verification or approval. The original application is unchanged. Old market-review answers do not carry into the new pre-market intake. Supporting documents and client assignments must be added to the new application separately. No existing rule definition is updated in place.
 
 ## Client-facing location selection
 
@@ -113,7 +117,7 @@ definitions and existing links; it does not require a new intake copy.
 
 ## Ontario commercial class draft (v4)
 
-New applications use `ontario-commercial-2026.10.25-v4`. The broker can choose
+Version 4 introduced the option to choose
 professional services, retail or rental-property owner as well as the existing
 contractor trades. Each new class opens activity questions relevant to its work.
 Retail importing/relabeling and short-term rentals open follow-ups only when
@@ -126,9 +130,23 @@ The uploaded appetite workbook lists markets and historical notes, some dating t
 must be checked against current applications and reviewed by a licensed broker
 before a market-specific readiness claim. New classes are not complete specialty
 insurance products. Existing v1/v2/v3 applications retain their original rule
-versions and can be copied to v4 without carrying approval, verification,
+versions and can be copied to the current version without carrying approval, verification,
 attachments or client assignments. The copy is a new application, not a rewrite
 of the prior approved record.
+
+## Pre-market broker intake (v5)
+
+New applications use `ontario-commercial-2026.10.26-v5`. The coverage and
+class-specific questions from v4 remain. The mandatory target-market review,
+market requirement register and market attestation are replaced by a broker
+intake review. This allows a complete, verified common-intake package before
+market selection. The PDF labels its scope as broker-reviewed common intake
+and says insurer-specific requirements were not assessed. The broker must
+confirm any current carrier forms, supplements and appetite outside this
+workflow before sending the package. The uploaded appetite workbook is only
+background context on risk types; its historical notes do not control
+questions, eligibility or approval. Existing v4 applications retain their
+published rules and market-review records.
 
 ## Submission cover overview
 

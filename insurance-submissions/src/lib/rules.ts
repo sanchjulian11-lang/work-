@@ -2,6 +2,7 @@ import {
   COVERAGE_RULE_VERSION,
   LATEST_RULE_VERSION,
   COMMERCIAL_RULE_VERSION,
+  PREMARKET_RULE_VERSION,
   coverageLed,
   coverageRules,
   intakeIssues,
@@ -10,6 +11,7 @@ import {
   answerQualityText,
 } from "./coverage-intake";
 import { commercialRules } from "./commercial-rules";
+import { premarketRules } from "./premarket-rules";
 import type { BusinessState, Rule } from "./types";
 export const RULE_VERSION = "ontario-contractors-2026.10.22-v1";
 // Internal starter rules, not insurer-approved forms or a statement of market appetite.
@@ -222,6 +224,7 @@ export const RULESETS: Record<string, Rule[]> = {
   [COVERAGE_RULE_VERSION]: coverageRules(CONTRACTOR_RULES),
   [LATEST_RULE_VERSION]: coverageRules(CONTRACTOR_RULES, LATEST_RULE_VERSION),
   [COMMERCIAL_RULE_VERSION]: commercialRules(CONTRACTOR_RULES),
+  [PREMARKET_RULE_VERSION]: premarketRules(CONTRACTOR_RULES),
 };
 export function rulesFor(s: BusinessState): Rule[] {
   const rules = RULESETS[s.rulesVersion];
@@ -286,9 +289,11 @@ export function coverageCodes(s: BusinessState): string[] {
   if (Number(s.answers.equipment_value?.value) > 0) result.push("equipment");
   if (
     (s.answers.vehicles?.value === "yes" &&
-      (![LATEST_RULE_VERSION, COMMERCIAL_RULE_VERSION].includes(
-        s.rulesVersion,
-      ) ||
+      (![
+        LATEST_RULE_VERSION,
+        COMMERCIAL_RULE_VERSION,
+        PREMARKET_RULE_VERSION,
+      ].includes(s.rulesVersion) ||
         s.answers.cover_auto?.value === "yes")) ||
     s.answers.cover_auto?.value === "yes"
   )

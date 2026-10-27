@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   COVERAGE_RULE_VERSION,
+  PREMARKET_RULE_VERSION,
   SCHEDULES,
   scheduleIssues,
   validVIN,
@@ -27,10 +28,10 @@ import {
 } from "../src/lib/sample";
 import type { BusinessState } from "../src/lib/types";
 const codes = ["cgl", "property", "auto", "equipment", "professional"];
-function fresh(): BusinessState {
+function fresh(version = COVERAGE_RULE_VERSION): BusinessState {
   return {
     ...sampleBusiness(),
-    rulesVersion: COVERAGE_RULE_VERSION,
+    rulesVersion: version,
     answers: {},
     documents: [],
   };
@@ -55,8 +56,8 @@ function row(id: string, overrides: Record<string, string> = {}) {
   };
 }
 const location = row("locations", { reference: "LOC-1", tenure: "leased" });
-function cglComplete() {
-  let s = fresh();
+function cglComplete(version = COVERAGE_RULE_VERSION) {
+  let s = fresh(version);
   for (const c of codes) s = put(s, `cover_${c}`, c === "cgl" ? "yes" : "no");
   for (const q of activeQuestions(s)) {
     if (s.answers[q.id]) continue;
@@ -69,7 +70,7 @@ function cglComplete() {
             ? "100% Ontario residential HVAC service"
             : q.id === "market_status"
               ? "common intake only - insurer requirements not assessed"
-              : q.id === "market_attestation"
+              : ["market_attestation", "intake_attestation"].includes(q.id)
                 ? "yes"
                 : q.type === "boolean"
                   ? "no"
@@ -81,6 +82,28 @@ function cglComplete() {
   for (const q of activeQuestions(s)) s = verifyAnswer(broker, s, q.id);
   return s;
 }
+it("allows a broker-reviewed pre-market intake to be approved without insurer selection", () => {
+  let s = cglComplete(PREMARKET_RULE_VERSION);
+  expect(completeness(s).ready).toBe(true);
+  expect(activeQuestions(s).some((q) => q.section === "Market review")).toBe(
+    false,
+  );
+  s = attachDraft(
+    broker,
+    s,
+    {
+      overviewQuestionIds: activeQuestions(s).map((q) => q.id),
+      coverageCodes: ["cgl"],
+      followUpQuestionIds: [],
+    },
+    "rules",
+    "test",
+  );
+  s = approve(broker, s);
+  expect(finalSubmission(broker, s).content).toContain(
+    "insurer-specific requirements not assessed",
+  );
+});
 describe("versioned coverage-led intake", () => {
   it("keeps original rules and existing account version intact", () => {
     const s = sampleBusiness();
@@ -430,12 +453,11 @@ it("retains exact published v1 and v2 definitions while v3 gates vehicle use by 
 });
 it("creates an explicit updated copy without carrying approval, verification, attachments or client access", async () => {
   const { updatedIntakeCopy } = await import("../src/lib/domain");
-  const { COMMERCIAL_RULE_VERSION } =
-    await import("../src/lib/coverage-intake");
+  const { PREMARKET_RULE_VERSION } = await import("../src/lib/coverage-intake");
   const s = cglComplete();
   const before = JSON.stringify(s);
   const copy = updatedIntakeCopy(broker, s);
-  expect(copy.rulesVersion).toBe(COMMERCIAL_RULE_VERSION);
+  expect(copy.rulesVersion).toBe(PREMARKET_RULE_VERSION);
   expect(copy.id).not.toBe(s.id);
   expect(copy.answers.cover_cgl.value).toBe("yes");
   expect(copy.answers.cover_cgl.source).toBe(s.answers.cover_cgl.source);

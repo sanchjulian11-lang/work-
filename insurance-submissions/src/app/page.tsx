@@ -5,6 +5,7 @@ import { ScheduleInput } from "@/components/schedule-input";
 import {
   scheduleIssues,
   COMMERCIAL_RULE_VERSION,
+  PREMARKET_RULE_VERSION,
   coverageLed,
 } from "@/lib/coverage-intake";
 import Link from "next/link";
@@ -497,7 +498,10 @@ export default async function Page({
                       <Hidden s={s} action="profile" />
                       <ProfileFields
                         profile={s.profile}
-                        expanded={s.rulesVersion === COMMERCIAL_RULE_VERSION}
+                        expanded={[
+                          COMMERCIAL_RULE_VERSION,
+                          PREMARKET_RULE_VERSION,
+                        ].includes(s.rulesVersion)}
                       />
                       <p className="fine">
                         Saving changes invalidates any draft and broker
@@ -561,14 +565,15 @@ export default async function Page({
                       retained.
                     </p>
                   )}
-                  {broker && s.rulesVersion !== COMMERCIAL_RULE_VERSION && (
+                  {broker && s.rulesVersion !== PREMARKET_RULE_VERSION && (
                     <section className="panel">
                       <h2>Updated questionnaire available</h2>
                       <p>
-                        The updated workflow keeps vehicle-use questions inside
-                        auto coverage. Start an updated copy with your saved
-                        answers. Verification and approval must be reviewed
-                        again; documents and client assignments are not copied.
+                        The updated workflow prepares a broker-reviewed intake
+                        before market selection. Start an updated copy with your
+                        saved answers. Verification and approval must be
+                        reviewed again; documents and client assignments are not
+                        copied.
                       </p>
                       <form action={perform}>
                         <Hidden s={s} action="update_intake" />
@@ -1053,8 +1058,9 @@ export default async function Page({
                 <input type="hidden" name="action" value="create" />
                 <p>
                   New applications use coverage-led common intake for CGL,
-                  property, auto, equipment and E&amp;O. Insurer-specific
-                  requirements require a separate broker check.
+                  property, auto, equipment and E&amp;O. The broker can complete
+                  this intake before choosing an insurer. Check any
+                  insurer-specific requirements separately before submission.
                 </p>
                 <ProfileFields />
                 <label className="checkbox">
@@ -1070,8 +1076,8 @@ export default async function Page({
             <span>·</span> Broker-led placement
             <br />
             <small>
-              {s?.rulesVersion ?? COMMERCIAL_RULE_VERSION} · Common broker
-              intake specification; broker validation required before live use.
+              {s?.rulesVersion ?? PREMARKET_RULE_VERSION} · Common broker intake
+              specification; broker validation required before live use.
             </small>
           </footer>
         </main>

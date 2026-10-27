@@ -1,5 +1,6 @@
 import { activeQuestions, isVerified } from "./rules";
 import type { BusinessState } from "./types";
+import { PREMARKET_RULE_VERSION } from "./coverage-intake";
 
 const classNames: Record<string, string> = {
   hvac: "HVAC contractor",
@@ -32,7 +33,7 @@ export function submissionOverview(s: BusinessState): string[] {
     `Business type: ${classNames[s.profile.industry] ?? s.profile.industry}`,
     `Requested effective date: ${answer("effective_date") ?? "See recorded terms below"}`,
     `Requested coverage: ${selected.length ? selected.join("; ") : (answer("coverage_request") ?? "See recorded terms below")}`,
-    `Submission scope: ${answer("market_status") ?? "See market review below"}`,
+    `Submission scope: ${s.rulesVersion === PREMARKET_RULE_VERSION ? "Broker-reviewed common intake; insurer-specific requirements not assessed" : (answer("market_status") ?? "See market review below")}`,
     `Supporting documents: ${s.documents.length} reviewed file${s.documents.length === 1 ? "" : "s"}; attach separately.`,
   ];
   if (answer("operations"))

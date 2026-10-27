@@ -527,14 +527,12 @@ test("retail intake opens product follow-ups without contractor questions and pe
   await page
     .getByText("Create another business profile", { exact: true })
     .click();
-  const create = page
-    .locator("form")
-    .filter({
-      has: page.getByRole("button", {
-        name: "Create application",
-        exact: true,
-      }),
-    });
+  const create = page.locator("form").filter({
+    has: page.getByRole("button", {
+      name: "Create application",
+      exact: true,
+    }),
+  });
   await create
     .getByLabel("Legal name", { exact: true })
     .fill("Fictional Retail Test Ltd.");
@@ -547,6 +545,13 @@ test("retail intake opens product follow-ups without contractor questions and pe
   await expect(page.getByRole("status")).toContainText("Saved");
   await page.getByRole("link", { name: "Questionnaire", exact: true }).click();
   await expect(page.locator("#question-retail_product_mix")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Broker intake review" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Market review" }),
+  ).toHaveCount(0);
+  await expect(page.locator("#question-intake_attestation")).toBeVisible();
   await expect(page.locator("#question-hot_work")).toHaveCount(0);
   await expect(page.locator("#question-retail_import_details")).toHaveCount(0);
   await page.locator("#question-retail_imports select").selectOption("yes");

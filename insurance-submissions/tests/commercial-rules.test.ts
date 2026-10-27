@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import {
   COMMERCIAL_RULE_VERSION,
+  PREMARKET_RULE_VERSION,
   LATEST_RULE_VERSION,
 } from "../src/lib/coverage-intake";
 import { activeQuestions, RULESETS, RULE_VERSION } from "../src/lib/rules";
@@ -9,6 +10,8 @@ import { COVERAGE_RULE_VERSION } from "../src/lib/coverage-intake";
 import { sampleBusiness } from "../src/lib/sample";
 import { saveAnswer, updatedIntakeCopy } from "../src/lib/domain";
 import { DEMO_BROKER } from "../src/lib/sample";
+import { intakeIssues } from "../src/lib/coverage-intake";
+import { submissionOverview } from "../src/lib/submission-overview";
 import type { BusinessState, Profile } from "../src/lib/types";
 function business(industry: Profile["industry"]): BusinessState {
   return {
@@ -38,6 +41,11 @@ describe("Ontario commercial class intake", () => {
       RULESETS[LATEST_RULE_VERSION].find((q) => q.id === "cgl_operations")
         ?.label,
     ).toContain("residential/commercial/industrial");
+    expect(
+      createHash("sha256")
+        .update(JSON.stringify(RULESETS[COMMERCIAL_RULE_VERSION]))
+        .digest("hex"),
+    ).toBe("99978ea54ec79ba5b0399de1cfed1065e280854a7b214acb88d49fb468d251cd");
   });
   it("asks retail activity questions without contractor trade questions and opens import follow-up", () => {
     let s = business("retail");
@@ -70,10 +78,42 @@ describe("Ontario commercial class intake", () => {
       rulesVersion: LATEST_RULE_VERSION,
       approval: undefined,
     });
-    expect(copy.rulesVersion).toBe(COMMERCIAL_RULE_VERSION);
+    expect(copy.rulesVersion).toBe(PREMARKET_RULE_VERSION);
     expect(copy.documents).toEqual([]);
     expect(copy.assignedClientIds).toEqual([]);
     expect(copy.approval).toBeUndefined();
     expect(copy.answers.operations?.verifiedBy).toBeUndefined();
+  });
+  it("finishes common intake before market selection without claiming insurer requirements were checked", () => {
+    let s = {
+      ...business("retail"),
+      rulesVersion: PREMARKET_RULE_VERSION,
+    };
+    expect(ids(s)).not.toContain("market_review");
+    expect(ids(s)).not.toContain("market_status");
+    expect(ids(s)).not.toContain("market_requirements");
+    expect(ids(s)).toContain("intake_attestation");
+    expect(intakeIssues(s)).toContain(
+      "Broker intake review must be confirmed.",
+    );
+    s = saveAnswer(DEMO_BROKER, s, "intake_attestation", "yes");
+    expect(intakeIssues(s)).not.toContain(
+      "Broker intake review must be confirmed.",
+    );
+    expect(submissionOverview(s).join(" ")).toContain(
+      "insurer-specific requirements not assessed",
+    );
+  });
+  it("does not carry old market decisions into a new pre-market copy", () => {
+    let s = business("retail");
+    s = saveAnswer(
+      DEMO_BROKER,
+      s,
+      "market_status",
+      "common intake only - insurer requirements not assessed",
+    );
+    const copy = updatedIntakeCopy(DEMO_BROKER, s);
+    expect(copy.rulesVersion).toBe(PREMARKET_RULE_VERSION);
+    expect(copy.answers.market_status).toBeUndefined();
   });
 });

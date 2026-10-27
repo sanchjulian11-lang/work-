@@ -27,7 +27,10 @@ import {
   updatedIntakeCopy,
 } from "@/lib/domain";
 import { actionDestination } from "@/lib/navigation";
-import { COMMERCIAL_RULE_VERSION } from "@/lib/coverage-intake";
+import {
+  COMMERCIAL_RULE_VERSION,
+  PREMARKET_RULE_VERSION,
+} from "@/lib/coverage-intake";
 import { generatePlan } from "@/lib/ai";
 import { inspectUpload, MAX_UPLOAD_BYTES } from "@/lib/documents";
 import type { BusinessState, DocumentRecord, Profile } from "@/lib/types";
@@ -110,7 +113,7 @@ export async function perform(form: FormData) {
         organizationId: actor.organizationId,
         assignedClientIds: [],
         revision: 1,
-        rulesVersion: COMMERCIAL_RULE_VERSION,
+        rulesVersion: PREMARKET_RULE_VERSION,
         fictional: isDemo() || field(form, "fictional") === "on",
         profile,
         answers: {},
@@ -181,7 +184,9 @@ export async function perform(form: FormData) {
             ),
           );
           if (
-            s.rulesVersion !== COMMERCIAL_RULE_VERSION &&
+            ![COMMERCIAL_RULE_VERSION, PREMARKET_RULE_VERSION].includes(
+              s.rulesVersion,
+            ) &&
             !["hvac", "electrical", "plumbing", "general"].includes(
               next.profile.industry,
             )
