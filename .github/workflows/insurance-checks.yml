@@ -32,6 +32,10 @@ jobs:
           cache: npm
           cache-dependency-path: insurance-submissions/package-lock.json
       - run: npm ci
+      - name: Install PDF text inspection tool
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y poppler-utils
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium

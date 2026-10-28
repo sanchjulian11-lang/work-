@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": { "deploymentEnabled": false },
+  "buildCommand": "node scripts/verify-staging.mjs && npm run build"
+}

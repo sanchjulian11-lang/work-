@@ -7,6 +7,7 @@ export type Actor = {
 };
 export type Answer = {
   value: string;
+  status?: "answered" | "unknown" | "unavailable";
   source: "client_statement" | "broker_recorded";
   recordedBy: string;
   recordedAt: string;
@@ -78,6 +79,38 @@ export type BusinessState = {
   documents: DocumentRecord[];
   draft?: Draft;
   approval?: Approval;
+  intake?: {
+    drafts: Record<
+      string,
+      {
+        value: string;
+        status: "answered" | "unknown" | "unavailable";
+        error: string;
+        recordedBy: string;
+        savedAt: string;
+      }
+    >;
+    submissions: {
+      id: string;
+      revision: number;
+      submittedBy: string;
+      submittedAt: string;
+      gaps: string[];
+    }[];
+    requests: {
+      id: string;
+      questionId: string;
+      prompt: string;
+      askedBy: string;
+      askedAt: string;
+      response?: string;
+      respondedBy?: string;
+      respondedAt?: string;
+      resolution?: string;
+      resolvedBy?: string;
+      resolvedAt?: string;
+    }[];
+  };
 };
 export type AuditEvent = {
   id: string;

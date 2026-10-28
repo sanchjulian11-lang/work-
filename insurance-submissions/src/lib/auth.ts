@@ -70,3 +70,27 @@ export async function currentActor(): Promise<Actor | null> {
     name: user.email ?? user.id,
   };
 }
+
+export async function currentIdentity(): Promise<
+  import("./invitations").Identity | null
+> {
+  if (!configured()) return null;
+  if (isDemo()) {
+    const client = (await cookies()).get("demo-role")?.value === "client";
+    return {
+      id: client ? DEMO_CLIENT.id : DEMO_BROKER.id,
+      email: client ? "client@fictional.example" : "broker@fictional.example",
+      verified: true,
+    };
+  }
+  const {
+    data: { user },
+    error,
+  } = await (await sessionClient()).auth.getUser();
+  if (error || !user?.email) return null;
+  return {
+    id: user.id,
+    email: user.email,
+    verified: !!user.email_confirmed_at,
+  };
+}

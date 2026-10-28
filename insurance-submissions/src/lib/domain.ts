@@ -57,6 +57,7 @@ export function saveAnswer(
   s: BusinessState,
   id: string,
   value: string,
+  status: "answered" | "unknown" | "unavailable" = "answered",
 ): BusinessState {
   assertAccess(actor, s);
   if (rulesFor(s).find((q) => q.id === id)?.provenance.owner === "broker")
@@ -67,13 +68,20 @@ export function saveAnswer(
         r.reference?.trim() ? r : { ...r, reference: randomUUID() },
       ),
     );
-  validateAnswer(s, id, value);
+  if (!["answered", "unknown", "unavailable"].includes(status))
+    throw new Error("Invalid answer status");
+  validateAnswer(s, id, status === "answered" ? value : "");
   const next = changed(s);
   next.answers = { ...s.answers };
-  if (!value.trim()) delete next.answers[id];
+  if (s.intake) {
+    next.intake = structuredClone(s.intake);
+    delete next.intake.drafts[id];
+  }
+  if (!value.trim() && status === "answered") delete next.answers[id];
   else
     next.answers[id] = {
-      value: value.trim(),
+      value: status === "answered" ? value.trim() : "",
+      ...(status !== "answered" ? { status } : {}),
       source: actor.role === "client" ? "client_statement" : "broker_recorded",
       recordedBy: actor.id,
       recordedAt: new Date().toISOString(),
@@ -108,6 +116,8 @@ export function verifyAnswer(
   assertAccess(actor, s);
   requireBroker(actor);
   const answer = s.answers[id];
+  if (s.intake?.drafts[id])
+    throw new Error("Resolve the saved draft before verifying this statement");
   if (!answer?.value.trim() || !activeQuestions(s).some((q) => q.id === id))
     throw new Error("An active recorded answer is required");
   validateAnswer(s, id, answer.value);

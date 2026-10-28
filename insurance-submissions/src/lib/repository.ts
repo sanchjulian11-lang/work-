@@ -14,6 +14,7 @@ type DemoStore = {
   businesses: BusinessState[];
   audit: AuditEvent[];
   snapshots: Snapshot[];
+  invitations?: import("./invitations").Invitation[];
 };
 const globalStore = globalThis as typeof globalThis & {
   insuranceQueue?: Promise<unknown>;
@@ -292,4 +293,142 @@ export async function clientMembers(
     id: m.user_id,
     label: `Client ${m.user_id.slice(0, 8)}`,
   }));
+}
+
+export async function issuePrivateInvitation(
+  actor: Actor,
+  state: BusinessState,
+  email: string,
+  days: number,
+) {
+  const { issueInvitation } = await import("./invitations");
+  const { token, invitation } = issueInvitation(actor, state, email, days);
+  if (isDemo())
+    await locked(async () => {
+      const db = await load();
+      const current = db.businesses.find((b) => b.id === state.id);
+      if (canonicalJSON(current) !== canonicalJSON(state))
+        throw new Error("Application changed; reload before inviting");
+      (db.invitations ??= []).push(invitation);
+      db.audit.push(
+        event(actor, state, "invitation_created", {
+          invitationId: invitation.id,
+          expiresAt: invitation.expiresAt,
+        }),
+      );
+      await persist(db);
+    });
+  else {
+    const { error } = await serviceClient().rpc("issue_intake_invitation", {
+      p_actor: actor.id,
+      p_expected_state: state,
+      p_invite: invitation,
+    });
+    if (error)
+      throw new Error(
+        "Invitation could not be created. Check workflow migration and reload.",
+      );
+  }
+  return token;
+}
+export async function privateInvitations(actor: Actor, state: BusinessState) {
+  assertAccess(actor, state);
+  requireBroker(actor);
+  if (isDemo())
+    return ((await locked(load)).invitations ?? [])
+      .filter((i) => i.businessId === state.id)
+      .map(({ tokenHash, ...i }) => i);
+  const { data, error } = await serviceClient()
+    .from("intake_invitations")
+    .select("id,email,expires_at,revoked_at,claimed_at")
+    .eq("business_id", state.id)
+    .eq("organization_id", actor.organizationId);
+  if (error)
+    throw new Error(
+      "Apply the client workflow migration before using invitations",
+    );
+  return (data ?? []).map((i) => ({
+    id: i.id,
+    email: i.email,
+    expiresAt: i.expires_at,
+    revokedAt: i.revoked_at,
+    claimedAt: i.claimed_at,
+  }));
+}
+export async function revokePrivateInvitation(
+  actor: Actor,
+  state: BusinessState,
+  id: string,
+) {
+  assertAccess(actor, state);
+  requireBroker(actor);
+  if (isDemo())
+    return locked(async () => {
+      const db = await load();
+      const i = db.invitations?.find(
+        (i) =>
+          i.id === id &&
+          i.businessId === state.id &&
+          i.organizationId === actor.organizationId,
+      );
+      if (!i || i.claimedAt)
+        throw new Error("Invitation unavailable or already claimed");
+      i.revokedAt = new Date().toISOString();
+      db.audit.push(
+        event(actor, state, "invitation_revoked", { invitationId: id }),
+      );
+      await persist(db);
+    });
+  const { error } = await serviceClient().rpc("revoke_intake_invitation", {
+    p_actor: actor.id,
+    p_id: id,
+  });
+  if (error) throw new Error("Invitation unavailable or already claimed");
+}
+export async function claimPrivateInvitation(
+  identity: import("./invitations").Identity,
+  token: string,
+) {
+  const { invitationHash, validateInvitation } = await import("./invitations");
+  const hash = invitationHash(token);
+  if (isDemo())
+    return locked(async () => {
+      const { DEMO_CLIENT } = await import("./sample");
+      const db = await load();
+      const i = db.invitations?.find((i) => i.tokenHash === hash);
+      validateInvitation(identity, i, token);
+      if (
+        identity.id !== DEMO_CLIENT.id ||
+        i!.organizationId !== DEMO_CLIENT.organizationId
+      )
+        throw new Error("Existing membership cannot be changed");
+      const s = db.businesses.find((b) => b.id === i!.businessId);
+      if (!s) throw new Error("Application unavailable");
+      const { changed } = await import("./domain");
+      let next = s;
+      if (!s.assignedClientIds.includes(identity.id)) {
+        next = changed(s);
+        next.assignedClientIds = [...s.assignedClientIds, identity.id];
+        db.businesses[db.businesses.indexOf(s)] = next;
+      }
+      i!.claimedBy = identity.id;
+      i!.claimedAt = new Date().toISOString();
+      db.audit.push(
+        event({ ...DEMO_CLIENT }, next, "invitation_claimed", {
+          invitationId: i!.id,
+        }),
+      );
+      await persist(db);
+      return s.id;
+    });
+  if (!identity.verified) throw new Error("Verify your email before claiming");
+  const { data, error } = await serviceClient().rpc("claim_intake_invitation", {
+    p_actor: identity.id,
+    p_token_hash: hash,
+  });
+  if (error)
+    throw new Error(
+      "Invitation is invalid, expired, already used, or does not match your verified email",
+    );
+  return data as string;
 }

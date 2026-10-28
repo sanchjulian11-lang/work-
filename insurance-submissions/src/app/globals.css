@@ -875,3 +875,69 @@ fieldset:disabled {
 fieldset {
   min-width: 0;
 }
+
+/* Guided, shared client/broker workflow. */
+.intake-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+.intake-shell h1 {
+  margin: 24px 0 12px;
+}
+.intake-shell label {
+  display: block;
+  margin: 14px 0;
+}
+.intake-shell input:not([type="checkbox"]),
+.intake-shell textarea,
+.intake-shell select {
+  width: 100%;
+}
+.intake-shell button {
+  margin: 8px 10px 8px 0;
+}
+.intake-shell ul {
+  padding-left: 22px;
+}
+.intake-shell li {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.intake-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 20px 0;
+}
+.intake-steps button {
+  flex: 1 1 190px;
+  font-size: 13px;
+}
+.intake-controls {
+  display: flex;
+  justify-content: space-between;
+}
+.save-status {
+  position: sticky;
+  top: 0;
+  background: #f5f8f3;
+  padding: 10px;
+  z-index: 2;
+  border-bottom: 1px solid #dce5dc;
+}
+.clarification {
+  border-top: 1px solid #dce5dc;
+  padding: 16px 0;
+}
+.intake-shell .panel {
+  margin: 20px 0;
+}
+@media (max-width: 600px) {
+  .intake-shell {
+    padding: 18px 14px 50px;
+  }
+  .intake-steps button {
+    flex-basis: 44%;
+  }
+}

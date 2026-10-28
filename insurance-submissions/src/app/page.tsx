@@ -261,6 +261,16 @@ export default async function Page({
         </Link>
         <div className="workspace-label">BROKERAGE WORKSPACE</div>
         <nav aria-label="Workspace">
+          {broker && (
+            <Link className="nav-item" href="/review">
+              Client intake queue
+            </Link>
+          )}
+          {s && (
+            <Link className="nav-item" href={"/intake/" + s.id}>
+              Guided intake
+            </Link>
+          )}
           {tabs
             .filter(
               (t) => broker || !["Broker review", "Audit trail"].includes(t),

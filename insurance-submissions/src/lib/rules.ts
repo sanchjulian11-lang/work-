@@ -252,11 +252,11 @@ export const COVERAGES = {
   cgl: {
     label: "Commercial general liability / completed operations",
     rationale:
-      "Contracting operations require broker review of liability and completed-operations exposures.",
+      "Recorded operations require broker review of liability, products and completed-work exposures where applicable.",
     evidence: ["operations"],
   },
   equipment: {
-    label: "Contractors equipment",
+    label: "Tools / movable equipment",
     rationale: "Review equipment values, storage, and applicable terms.",
     evidence: ["equipment_value", "equipment_storage"],
   },
@@ -267,9 +267,9 @@ export const COVERAGES = {
     evidence: ["vehicles", "vehicle_details"],
   },
   professional: {
-    label: "Contractors professional liability",
+    label: "Professional liability / E&O",
     rationale:
-      "Design responsibility warrants review of professional exposures.",
+      "Recorded professional services warrant review of professional-liability exposures.",
     evidence: ["design", "design_details"],
   },
   property: {
@@ -327,7 +327,11 @@ export function coverageCodes(s: BusinessState): string[] {
 export function isVerified(s: BusinessState, id: string): boolean {
   const a = s.answers[id];
   return Boolean(
-    a?.verifiedBy && a.verifiedAt && a.questionVersion === s.rulesVersion,
+    a?.verifiedBy &&
+    a.verifiedAt &&
+    !s.intake?.drafts[id] &&
+    (!a.status || a.status === "answered") &&
+    a.questionVersion === s.rulesVersion,
   );
 }
 export function completeness(s: BusinessState) {
@@ -352,6 +356,22 @@ export function completeness(s: BusinessState) {
   for (const d of s.documents)
     if (!d.reviewedBy) documentIssues.push(`Review document: ${d.name}`);
   const profileIssues: string[] = intakeIssues(s);
+  for (const q of active)
+    if (
+      s.answers[q.id]?.status === "unknown" ||
+      s.answers[q.id]?.status === "unavailable"
+    )
+      profileIssues.push(
+        `Resolve unknown or unavailable information: ${q.label}`,
+      );
+  for (const [id, draft] of Object.entries(s.intake?.drafts ?? {}))
+    if (active.some((q) => q.id === id))
+      profileIssues.push(
+        `Unvalidated saved draft: ${active.find((q) => q.id === id)!.label} — ${draft.error}`,
+      );
+  for (const request of s.intake?.requests ?? [])
+    if (!request.resolvedAt)
+      profileIssues.push(`Resolve clarification: ${request.prompt}`);
   for (const q of active)
     if (q.type === "schedule" && s.answers[q.id]?.value)
       profileIssues.push(

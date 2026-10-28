@@ -52,6 +52,17 @@ beforeAll(async () => {
     "insert into businesses(id,organization_id,state) values($1,$2,$3)",
     [sample.id, sample.organizationId, JSON.stringify(sample)],
   );
+  // Run historical authorization/approval checks against the additive workflow
+  // migration too, with the auth columns provided by hosted Supabase.
+  await db.exec(
+    "alter table auth.users add column email text; alter table auth.users add column email_confirmed_at timestamptz;",
+  );
+  await db.exec(
+    await readFile(
+      "supabase/migrations/202610270001_client_workflow.sql",
+      "utf8",
+    ),
+  );
 }, 30000);
 afterAll(async () => {
   await db.close();

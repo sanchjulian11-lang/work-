@@ -2,6 +2,9 @@
 
 Run from `insurance-submissions` with Node 24 and Chromium installed:
 
+The PDF text regression tests also require Poppler's `pdftotext` (for example,
+the `poppler-utils` package on Debian/Ubuntu).
+
 ```sh
 npm ci
 npm test
@@ -38,10 +41,22 @@ independent automatic deployment or establish a required merge check.
   silently substituting another address. Approval stays blocked.
 - Mobile layout and unassigned-client access restrictions.
 - Serialized autosaves, draft retention, network failures and stale-session recovery.
+- Private invitation claim/reuse/revocation, unassigned access denial, typed unknowns,
+  invalid-but-saved numeric drafts, partial submissions, broker queue and a
+  question-linked clarification round trip between separate fictional sessions.
+- Client/broker concurrent edits pause, preserve drafts and require comparison;
+  offline saves cannot report success and can resume after reconnecting.
 
 Unit/domain tests additionally cover schedule checks, immutable rule definitions,
 role checks, dependency invalidation, AI reference validation, PDF output and
 actual migration/RLS/RPC behaviour through PGlite PostgreSQL.
+
+The workflow tests apply both migrations and additionally check verified-email
+claiming, expiry, role/tenant boundaries, new membership assignment, approval
+invalidation and preserved revision history. The real PDF-content test extracts
+text and checks scope, terminology, hidden auto records and approval provenance.
+See [PRIVATE-CLIENT-WORKFLOW.md](PRIVATE-CLIENT-WORKFLOW.md) for the review paths
+and current limitations.
 
 ## Boundaries
 

@@ -5,7 +5,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PDFDocument, rgb } from "pdf-lib";
 import { activeQuestions, COVERAGES, isVerified } from "./rules";
-import { submissionOverview } from "./submission-overview";
+import { submissionOverview, submissionScope } from "./submission-overview";
+import { PREMARKET_RULE_VERSION } from "./coverage-intake";
 import type { BusinessState, Snapshot } from "./types";
 
 // Deterministic presentation only: no model rewriting or inferred client facts.
@@ -102,8 +103,9 @@ export async function submissionPDF(s: BusinessState, snapshot: Snapshot) {
   for (const line of submissionOverview(s)) text(line);
   if (coverageLed(s.rulesVersion)) {
     heading("Submission scope");
-    text(s.answers.market_status?.value || "Not assessed");
-    text(s.answers.market_review?.value || "Not provided");
+    text(submissionScope(s));
+    if (s.rulesVersion !== PREMARKET_RULE_VERSION)
+      text(s.answers.market_review?.value || "Not provided");
   }
   const questions = activeQuestions(s).filter((q) => isVerified(s, q.id));
   const request = questions.find((q) => q.id === "coverage_request");
