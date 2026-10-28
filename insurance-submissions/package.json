@@ -10,6 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "seed": "node --env-file=.env.local scripts/seed.mjs",
     "test:e2e": "playwright test",
+    "prepare:connected": "tsx scripts/prepare-connected-pilot.ts",
+    "test:connected": "playwright test --config=playwright.connected.config.ts",
     "export-seed": "tsx scripts/export-seed.ts"
   },
   "dependencies": {

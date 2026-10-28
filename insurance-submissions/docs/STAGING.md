@@ -39,4 +39,20 @@ An isolated Docker-backed Supabase stack can test actual Auth, PostgreSQL and St
 
 The current local setup uses the official Supabase CLI 2.54.11, downloaded from its GitHub release and checked against the release's SHA-256 checksums. The current CLI 2.122.0 could not start because it tried to create configuration under this environment's read-only home; the older installer also failed to use the egress proxy. Neither TLS nor checksum verification was disabled. Tool installation and stack data remain outside Git.
 
+The CLI's default ECR image registry was blocked; its supported `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io` setting reached the official Docker Hub images. PostgreSQL 17 and the smaller supported PostgreSQL 15 image then both failed extraction with **no space left on device** in this Docker daemon's `vfs` image storage. The attempts were stopped. A small Docker smoke container ran successfully, but no Supabase database/Auth/Storage stack became ready and no migrations or account bootstrap ran there. Do not report this local connected environment as verified.
+
+### Connected acceptance harness — prepared, not yet run
+
+`scripts/prepare-connected-pilot.ts` and `playwright.connected.config.ts` prepare a separate connected acceptance path. They fail before provisioning unless the isolation preflight identifies the local test stack. Bootstrap creates only fictional, randomly named broker accounts and a CGL-only application; the client signs up through captured local email. Fixture credentials belong in a private `/tmp` file, never Git. The browser test covers claim, saved unknowns, partial handoff, broker clarification, completed answers, private upload/download, broker verification/approval, PDF scope, cross-organization denial and invalidation after a client edit.
+
+The connected test configuration rebuilds Next.js with the test stack's environment before starting it. `NEXT_PUBLIC_*` variables are compiled into the build; changing only runtime environment variables is insufficient. Traces and screenshots are disabled for this credential-bearing suite, and its output directory is outside the normal demo CI artifacts.
+
+These harness files have passed TypeScript checks/build compilation, but the connected test has **not run** because the backend could not start. They do not replace the required hosted staging verification. After a local stack is available, configure its private environment and fixture path before running `npm run prepare:connected` and `npm run test:connected`; do not point them at a live or existing hosted database. The config deliberately rejects hosted URLs so captured-mail tests cannot accidentally send to real recipients. Hosted acceptance will need a separately configured, fictional-only test project and approved test delivery settings.
+
+## Publication and current verification
+
+The staging branch was pushed successfully and its remote commit was read back. The original `main` tip remained `9fe513d1c1ddb524391cf4f05fce84557cabe25a`. The published application increment passed 134 unit/database/PDF/isolation tests and a production build. The eight existing fictional browser acceptance scenarios passed for the reviewed workflow. The new connected harness remains unrun, as described above.
+
+A hosted Vercel staging release has **not** been created. Management tokens have no saved bindings yet, and the new API network settings still require publication. No existing hosted database, production deployment, real invitations or client records were changed.
+
 Follow [CONNECTED-ACCEPTANCE.md](CONNECTED-ACCEPTANCE.md) for the full acceptance criteria. Software test results, branch publication, a running local stack and a hosted staging release must be reported separately.
